@@ -9,6 +9,12 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
     static ArrayList<Consultation> consultationList = new ArrayList<>();
 
     public static void main(String[] args) {
+        doctorList.add(new Doctor("John", "Doe", 19800101, 123456, 12345, "Pediatrics"));
+        doctorList.add(new Doctor("Jane", "Smith", 19700202, 234567, 23456, "Surgery"));
+        doctorList.add(new Doctor("Robert", "Johnson", 19600303, 34567, 34567, "Orthopedics"));
+        doctorList.add(new Doctor("Mary", "Williams", 19500404, 456789, 45678, "Cardiology"));
+        doctorList.add(new Doctor("David", "Brown", 19400505, 567890, 56789, "Oncology"));
+
             displayMenu();
     }
 
@@ -66,17 +72,48 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
 
 //        doctorList.add(Doctor doctor);
     }
+
     static void removeDoctor(){
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter doctor licence No to remove : ");
-        String docLicenceNo = scanner.next();
-        doctorList.remove(doctorList.indexOf(docLicenceNo));
-    }
-    static void printDocList(){
-        for (int i=0; i<=doctorList.size(); i++){
-            System.out.println(doctorList.get(i));
+        int docLicenceNo = scanner.nextInt();
+        //doctorList.removeIf(doctor -> doctor.getLicenceNo() == docLicenceNo);
+        for (int i = 0; i <= doctorList.size(); i++) {
+            if (doctorList.get(i).getLicenceNo() == docLicenceNo) {
+                Doctor deletedDocCopy = doctorList.get(i);  //Get a copy of doctor element
+                doctorList.remove(i);
+                System.out.println("Successfully Removed Dr."+ deletedDocCopy.getName() +" " + deletedDocCopy.getSurname());
+                System.out.println(doctorList.size() + " doctors available");
+                break;
+            }
         }
-        
+    }
+
+    static void printDocList(){
+        ArrayList<Doctor> doctorListCopy = new ArrayList<>(doctorList);
+        System.out.println("    <---    Doctor List    --->    ");
+        for (Doctor doctor : doctorList){
+            System.out.println(
+                "Name           : " + doctor.getName() + '\n' +
+                "Surname        : " + doctor.getSurname() + '\n' +
+                "Date of Birth  : " + doctor.getDateOfBirth() + '\n' +
+                "Phone No       : " + doctor.getMobilNo() + '\n' +
+                "Licence No     : " + doctor.getLicenceNo() + '\n' +
+                "Specialisation : " + doctor.getSpecialisation()  + '\n' +
+                "____________________________________"
+            );
+
+//            for (int i=0; i<doctorList.size(); i++){
+//                ArrayList<Doctor> Passen = allQueues[i].getQueue();  //copy of Queue
+//                ArrayList<String> customerNames = new ArrayList<>();
+//                for (Doctor p : Passen) {
+//                    customerNames.add(p.getSurname());
+//                }
+//                customerNames.sort(String.CASE_INSENSITIVE_ORDER);
+//                System.out.println("Pump "+ (i+1) + " queue in alphabetical order = " + customerNames);
+//            }
+        }
+
     }
     static void saveInfo(){}
     static void readInfo(){}
