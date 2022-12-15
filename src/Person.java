@@ -3,10 +3,10 @@ import java.util.Date;
 public class Person {   //Super Class
     private String name;
     private String surname;
-    private Date dateOfBirth;
+    private int dateOfBirth;
     private int mobilNo;
 
-    public Person(String name, String surname, Date dateOfBirth, int mobilNo){
+    public Person(String name, String surname, int dateOfBirth, int mobilNo){
         this.name = name;
         this.surname = surname;
         this.dateOfBirth = dateOfBirth;
@@ -23,7 +23,7 @@ public class Person {   //Super Class
         return surname;
     }
 
-    public Date getDateOfBirth() {
+    public int getDateOfBirth() {
         return dateOfBirth;
     }
 
@@ -39,7 +39,7 @@ public class Person {   //Super Class
         this.surname = surname;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
+    public void setDateOfBirth(int dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 

@@ -3,7 +3,7 @@ import java.util.Date;
 public class Patient extends Person{    //Subclass of person
     private int patientID;  // Field for the patient's unique ID
 
-    public Patient(String name, String surname, Date dateOfBirth, int mobilNo, int patientID) {
+    public Patient(String name, String surname, int dateOfBirth, int mobilNo, int patientID) {
         super(name, surname, dateOfBirth, mobilNo);
         this.patientID = patientID;
     }

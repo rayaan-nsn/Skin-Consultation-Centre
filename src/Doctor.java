@@ -6,7 +6,7 @@ public class Doctor extends Person{  //Subclass of person
     private int licenceNo;
     private String specialisation;
 
-    public Doctor(String name, String surname, Date dateOfBirth, int mobilNo, int licenceNo, String specialisation) {
+    public Doctor(String name, String surname, int dateOfBirth, int mobilNo, int licenceNo, String specialisation) {
         super(name, surname, dateOfBirth, mobilNo);
         this.specialisation = specialisation;
         this.licenceNo = licenceNo;
