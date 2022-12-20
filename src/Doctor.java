@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Date;
 
-public class Doctor extends Person{  //Subclass of person
+public class Doctor extends Person implements Serializable {  //Subclass of person
 
     // Fields for the doctor's medical license number and specialization
     private int licenceNo;

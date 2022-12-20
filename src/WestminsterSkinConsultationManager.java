@@ -1,9 +1,11 @@
 import javax.print.Doc;
+import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+//import java.io.FileOutputStream;
+//import java.io.ObjectOutputStream;
 import java.util.Comparator;
+import java.io.Serializable;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -15,13 +17,13 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
     public static void main(String[] args) {
 
         //Temporary doctors for testing
-//        doctorList.add(new Doctor("John", "Doe", 19800101, 123456, 12345, "Pediatrics"));
-//        doctorList.add(new Doctor("Jane", "Anderson", 19700202, 234567, 23456, "Surgery"));
-//        doctorList.add(new Doctor("Robert", "Johnson", 19600303, 34567, 34567, "Orthopedics"));
-//        doctorList.add(new Doctor("Mary", "Williams", 19500404, 456789, 45678, "Cardiology"));
-//        doctorList.add(new Doctor("David", "Brown", 19400505, 567890, 56789, "Oncology"));
+        doctorList.add(new Doctor("John", "Doe", 19800101, 123456, 12345, "Pediatrics"));
+        doctorList.add(new Doctor("Jane", "Anderson", 19700202, 234567, 23456, "Surgery"));
+        doctorList.add(new Doctor("Robert", "Johnson", 19600303, 34567, 34567, "Orthopedics"));
+        doctorList.add(new Doctor("Mary", "Williams", 19500404, 456789, 45678, "Cardiology"));
+        doctorList.add(new Doctor("David", "Brown", 19400505, 567890, 56789, "Oncology"));
         //Temporary doctors for testing
-readInfo();
+        //readInfo();
             displayMenu();
     }
 
@@ -34,11 +36,9 @@ readInfo();
                 Please select an option from the menu below:
                     1. Add a new doctor
                     2. Delete a doctor
-                    3. Add a consultation
-                    4. Cancel a consultation
-                    5. Print the list of doctors
-                    6. Save the information entered so far
-                    7. Read the information from the file
+                    3. Print the list of doctors
+                    4. Save the information
+                    5. Read the info
                     0. Exit the system
                 --------------------------------------------------------------
                 """);
@@ -48,11 +48,10 @@ readInfo();
                 switch (choice) {
                     case 1 -> addDoctor();
                     case 2 -> removeDoctor();
-                    //case 3 -> addConsultation();
-                    //case 4 -> cancelConsultation();
-                    case 5 -> printDocList();
-                    case 6 -> saveInfo();
-                    case 7 -> readInfo();
+                    case 3 -> printDocList();
+                    case 4 -> saveInfo();
+                    case 5 -> readInfo();
+                    case 10 -> openGUI();
                     case 0 -> System.exit(0);
                     default -> System.out.println("Invalid selection, Try again...");
                 }
@@ -76,10 +75,10 @@ readInfo();
             String docSpecialisation = scanner.next();
 
             doctorList.add(new Doctor(docName, docSurName, docDOB, docPNo, docLicenseNo, docSpecialisation));
+
         } else {
             System.out.println("Doctor List is full");
         }
-//        doctorList.add(Doctor doctor);
     }
 
     static void removeDoctor(){
@@ -96,8 +95,8 @@ readInfo();
                     System.out.println(doctorList.size() + " doctors available");
                 } else {
                     System.out.println("Licence No. not found");
+                    break;
                 }
-                break;
             }
         }catch (IndexOutOfBoundsException e){
             System.out.println("No such doctor");
@@ -105,26 +104,19 @@ readInfo();
     }
 
     static void printDocList(){
-//        doctorList.sort(new Comparator<Doctor>() {
-//            @Override
-//            public int compare(Doctor d1, Doctor d2) {
-//                return d1.getSurname().compareTo(d2.getSurname());
-//            }
-//        });
-        doctorList.sort(Comparator.comparing(Doctor::getSurname));
-        System.out.println("    <---    Doctor List    --->    ");
-        for (Doctor doctor : doctorList){
-            System.out.println(
-                "Name           : " + doctor.getName() + '\n' +
-                "Surname        : " + doctor.getSurname() + '\n' +
-                "Date of Birth  : " + doctor.getDateOfBirth() + '\n' +
-                "Phone No       : " + doctor.getMobilNo() + '\n' +
-                "Licence No     : " + doctor.getLicenceNo() + '\n' +
-                "Specialisation : " + doctor.getSpecialisation()  + '\n' +
-                "____________________________________");
+        ArrayList<Doctor> doctorListCopy = (ArrayList<Doctor>) doctorList.clone();
+        doctorListCopy.sort(Comparator.comparing(Doctor::getSurname));
+        System.out.println("Name ---- Surname ---- DOB -------- Mobile ----- Licence ---- Specialisation");
+        for (Doctor doc : doctorListCopy){
+            System.out.printf("%-10s",doc.getName());
+            System.out.printf("%-13s",doc.getSurname());
+            System.out.printf("%-13d",doc.getDateOfBirth());
+            System.out.printf("%-13d",doc.getMobilNo());
+            System.out.printf("%-13d",doc.getLicenceNo());
+            System.out.printf("%-13s \n",doc.getSpecialisation() );
         }
     }
-    static void saveInfo(){
+    static void saveInfo() {
         try {
             // Create a FileOutputStream to write the object to a file
             FileOutputStream fos = new FileOutputStream("list.txt");
@@ -143,34 +135,56 @@ readInfo();
             System.out.println("Exception");
             e.printStackTrace();
         }
-
-//        //write to file
-//        try {
-//            FileOutputStream fos = new FileOutputStream("output");
-//            ObjectOutputStream oos = new ObjectOutputStream(fos);
-//            oos.writeObject(doctorList); // write MenuArray to ObjectOutputStream
-//            oos.close();
-//        } catch(Exception ex) {
-//            ex.printStackTrace();
-//        }
-        }
-
-    static void readInfo(){
-//        ArrayList<String> list = null;
-
-        try (FileInputStream fis = new FileInputStream("list.txt");
-             ObjectInputStream ois = new ObjectInputStream(fis)) {
-            doctorList = (ArrayList<Doctor>)ois.readObject();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (doctorList != null) {
-            for (Doctor s : doctorList) {
-                System.out.println(s);
-            }
-        }
     }
+
+public static void readInfo() {
+    try {
+        FileInputStream fis = new FileInputStream("list.txt");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        doctorList = (ArrayList<Doctor>) ois.readObject();
+        ois.close();
+        fis.close();
+    } catch (IOException |ClassCastException | ClassNotFoundException e) {
+        e.printStackTrace();
+    }
+}
+
+/* <<< ------------------------------ GUI (Phase 3) ------------------------------ >>> */
+
+    /*
+To implement the GUI for a doctor-patient consultation software according to the requests specified above, you can follow these steps:
+
+1.Create a table to display the list of doctors with their name, age, and other relevant information.
+You can use the JTable component provided by the Java Swing library to create the table.
+
+2.Implement a sorting function to allow the user to sort the list of doctors alphabetically.
+You can use the Collections.sort method to sort the list of doctors, and then update the table with the sorted list.
+
+3.Add a button or other UI element that allows the user to select a doctor and book a consultation.
+When the user clicks this button, you can display a form that allows the user to enter the patient's information,
+such as name, surname, date of birth, and mobile number.
+
+4.Implement a function to check the availability of the doctor at the chosen date and time.
+If the doctor is not available, you can use the Collections.shuffle method to randomly select an available doctor
+from the list of all available doctors.
+
+5.Implement a function to calculate the cost of the consultation based on the length of the consultation and
+the rate specified in the request. You can use this function to display the cost to the user and
+allow them to confirm the consultation.
+
+6.Implement a function to encrypt the notes entered by the user using a suitable encryption algorithm.
+You can use an available API such as the Java Cryptography Extension (JCE) to handle the encryption.
+
+7.Implement a way for the user to view the stored information for a consultation, including the patient info,
+cost, and encrypted notes. This can be done by displaying the information in a form or a separate window.
+    */
+
+public static void openGUI(){
+        JFrame frame = new JFrame("Westminster Skin Care Centre");
+        frame.setSize(500,500);
+        frame.setVisible(true);
+}
+
 
 
 }
