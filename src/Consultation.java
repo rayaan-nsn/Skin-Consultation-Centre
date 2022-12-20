@@ -1,3 +1,4 @@
+import javax.print.Doc;
 import java.util.Date;
 
 public class Consultation {
@@ -6,9 +7,13 @@ public class Consultation {
     private Date date;
     private double cost;
     private String notes;
+    private Doctor doctor;
+    private Patient patient;
 
 
-    public Consultation(Date date, double cost, String notes){
+    public Consultation(Doctor doctor, Patient patient, Date date, double cost, String notes){
+        this.doctor = doctor;
+        this.patient = patient;
         this.date = date;
         this.cost = cost;
         this.notes = notes;

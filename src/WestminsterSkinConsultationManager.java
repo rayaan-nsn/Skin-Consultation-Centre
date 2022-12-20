@@ -23,11 +23,14 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         doctorList.add(new Doctor("Mary", "Williams", 19500404, 456789, 45678, "Cardiology"));
         doctorList.add(new Doctor("David", "Brown", 19400505, 567890, 56789, "Oncology"));
         //Temporary doctors for testing
+
         //readInfo();
-            displayMenu();
+        //displayMenu();
+
+        openGUI();  //Temporary for testing
     }
 
-    static void displayMenu(){
+    public static void displayMenu(){
         Scanner scanner = new Scanner(System.in);
         System.out.print("""
                 --------------------------------------------------------------
@@ -39,6 +42,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                     3. Print the list of doctors
                     4. Save the information
                     5. Read the info
+                    10. GUI
                     0. Exit the system
                 --------------------------------------------------------------
                 """);
@@ -58,7 +62,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
-    static void addDoctor(){
+    public static void addDoctor(){
         if (doctorList.size()<=10) {
             Scanner scanner = new Scanner(System.in);
             System.out.print("Enter doctor name : ");
@@ -81,7 +85,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
-    static void removeDoctor(){
+    public static void removeDoctor(){
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter doctor licence No to remove : ");
         int docLicenceNo = scanner.nextInt();
@@ -103,7 +107,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
-    static void printDocList(){
+    public static void printDocList(){
         ArrayList<Doctor> doctorListCopy = (ArrayList<Doctor>) doctorList.clone();
         doctorListCopy.sort(Comparator.comparing(Doctor::getSurname));
         System.out.println("Name ---- Surname ---- DOB -------- Mobile ----- Licence ---- Specialisation");
@@ -116,10 +120,10 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             System.out.printf("%-13s \n",doc.getSpecialisation() );
         }
     }
-    static void saveInfo() {
+    public static void saveInfo() {
         try {
             // Create a FileOutputStream to write the object to a file
-            FileOutputStream fos = new FileOutputStream("list.txt");
+            FileOutputStream fos = new FileOutputStream("list.ser");
 
             // Create an ObjectOutputStream to write the object to the FileOutputStream
             ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -137,54 +141,21 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
-public static void readInfo() {
-    try {
-        FileInputStream fis = new FileInputStream("list.txt");
-        ObjectInputStream ois = new ObjectInputStream(fis);
-        doctorList = (ArrayList<Doctor>) ois.readObject();
-        ois.close();
-        fis.close();
-    } catch (IOException |ClassCastException | ClassNotFoundException e) {
-        e.printStackTrace();
+    public static void readInfo() {
+        try {
+            FileInputStream fis = new FileInputStream("list.ser");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            doctorList = (ArrayList<Doctor>) ois.readObject();
+            ois.close();
+            fis.close();
+        } catch (IOException |ClassCastException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
-}
 
 /* <<< ------------------------------ GUI (Phase 3) ------------------------------ >>> */
 
-    /*
-To implement the GUI for a doctor-patient consultation software according to the requests specified above, you can follow these steps:
-
-1.Create a table to display the list of doctors with their name, age, and other relevant information.
-You can use the JTable component provided by the Java Swing library to create the table.
-
-2.Implement a sorting function to allow the user to sort the list of doctors alphabetically.
-You can use the Collections.sort method to sort the list of doctors, and then update the table with the sorted list.
-
-3.Add a button or other UI element that allows the user to select a doctor and book a consultation.
-When the user clicks this button, you can display a form that allows the user to enter the patient's information,
-such as name, surname, date of birth, and mobile number.
-
-4.Implement a function to check the availability of the doctor at the chosen date and time.
-If the doctor is not available, you can use the Collections.shuffle method to randomly select an available doctor
-from the list of all available doctors.
-
-5.Implement a function to calculate the cost of the consultation based on the length of the consultation and
-the rate specified in the request. You can use this function to display the cost to the user and
-allow them to confirm the consultation.
-
-6.Implement a function to encrypt the notes entered by the user using a suitable encryption algorithm.
-You can use an available API such as the Java Cryptography Extension (JCE) to handle the encryption.
-
-7.Implement a way for the user to view the stored information for a consultation, including the patient info,
-cost, and encrypted notes. This can be done by displaying the information in a form or a separate window.
-    */
-
-public static void openGUI(){
-        JFrame frame = new JFrame("Westminster Skin Care Centre");
-        frame.setSize(500,500);
-        frame.setVisible(true);
-}
-
-
-
+    public static void openGUI(){
+            WSCFrame WSCFrame = new WSCFrame();
+    }
 }

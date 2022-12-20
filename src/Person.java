@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Date;
 
-public class Person {   //Super Class
+public class Person implements Serializable {   //Super Class
     private String name;
     private String surname;
     private int dateOfBirth;
