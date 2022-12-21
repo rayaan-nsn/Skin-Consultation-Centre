@@ -1,30 +1,29 @@
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import org.jdatepicker.JDatePicker;
-import org.jdatepicker.UtilDateModel;
+
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.TimePicker;
 
 public class WSCFrame extends JFrame{
 
     WSCFrame(){
         //Frame 2
-        JFrame dateTimeFrame = new JFrame("Westminster Skin Care Centre");
-            frameProperties(dateTimeFrame);
-            dateTimeFrame.setVisible(false); // make the frame invisible until button click event
+        JFrame patientDetails = new JFrame("Westminster Skin Care Centre");
+        patientDetailFrame(patientDetails);
+        frameProperties(patientDetails);
+        patientDetails.setVisible(true); // make the frame invisible until button click event
 
         //Frame 1
         JFrame docTableFrame = new JFrame("Westminster Skin Care Centre");
-            frameProperties(docTableFrame);
-            docTableFrameFunctions(docTableFrame, dateTimeFrame);
-            docTableFrame.setVisible(true); // make the frame visible
+//        frameProperties(docTableFrame);
+        docTableFrameFunctions(docTableFrame, patientDetails);
+        docTableFrame.setVisible(false); // make the frame visible --------------------------------------Make this true at the end
 
     }
-
-
 
 
     void frameProperties(JFrame frame){
@@ -35,11 +34,84 @@ public class WSCFrame extends JFrame{
         //frame.pack();   // Pack the frame to fit its contents
     }
 
+    void patientDetailFrame(JFrame frame2){
+
+
+
+        // Create a panel with a GridLayout to hold the label and text field
+        JPanel patientDetailsPanel = new JPanel(new GridLayout(4,2));
+        patientDetailsPanel.setBounds(0,50,500,150);
+        patientDetailsPanel.setBackground(Color.cyan);
+
+        JLabel topic = new JLabel("Patient details");
+
+        JLabel end = new JLabel("end");
+
+        // Name label and text-field
+        JLabel patientNameLabel = new JLabel("Enter your name:");
+        patientDetailsPanel.add(patientNameLabel);
+        JTextField inputPatientName = new JTextField(30);
+        patientDetailsPanel.add(inputPatientName);
+
+        patientDetailsPanel.add(new JLabel("<html><br></html>"));   //Newline
+
+        // Surname label and text-field
+        JLabel patientSurNameLabel = new JLabel("Enter your surname:");
+        patientDetailsPanel.add(patientSurNameLabel);
+        JTextField inputPatientSurName = new JTextField(30);
+        patientDetailsPanel.add(inputPatientSurName);
+
+        patientDetailsPanel.add(new JLabel("<html><br></html>"));   //Newline
+
+        //DOB label and text-field
+        JLabel patientDOB = new JLabel("Select DOB");
+        patientDetailsPanel.add(patientDOB);
+        DatePicker pickPatientDOB = new DatePicker();
+        patientDetailsPanel.add(pickPatientDOB);
+
+        patientDetailsPanel.add(new JLabel("<html><br></html>"));   //Newline
+
+        JLabel patientMobNo = new JLabel("Enter mobile no.");
+        patientDetailsPanel.add(patientMobNo);
+        JSpinner inputPatientMobNo = new JSpinner();
+        patientDetailsPanel.add(inputPatientMobNo);
+
+        //Automatic create a unique patientID using the ArrayList index
+        String patientID = "ID-" + WestminsterSkinConsultationManager.patientList.size()+1;
+
+        int tempInt = 1;
+
+        JButton submitPatientDetails = new JButton("Submit Details");
+        submitPatientDetails.setPreferredSize(new Dimension(100, 50));
+        submitPatientDetails.addActionListener(e -> {
+            WestminsterSkinConsultationManager.patientList.add(new Patient(inputPatientName.getText(),inputPatientSurName.getText(),tempInt,(int) inputPatientMobNo.getValue(),patientID));
+            
+                });
+
+
+
+
+
+
+
+
+
+
+
+
+        frame2.add(patientDetailsPanel);
+        frame2.add(submitPatientDetails, BorderLayout.SOUTH);
+//        frame2.add(topic, BorderLayout.NORTH);
+        frame2.add(end);
+
+
+    }
+
     public void docTableFrameFunctions(JFrame frame1, JFrame frame2){
-        ArrayList<Doctor> docData = (ArrayList<Doctor>) WestminsterSkinConsultationManager.doctorList.clone();
         String[] columnNames = {"Name", "Surname", "DOB","Mobile No","License No","Specialisation"};
+
         DefaultTableModel dtm = new DefaultTableModel(columnNames, 1);
-        for (Doctor d : docData) {
+        for (Doctor d : WestminsterSkinConsultationManager.doctorList) {
             dtm.addRow(new String[]{
                     d.getName(),
                     d.getSurname(),
@@ -48,38 +120,53 @@ public class WSCFrame extends JFrame{
                     String.valueOf(d.getLicenceNo()),
                     d.getSpecialisation()});
         }
+        JTable docTable = new JTable(dtm);
+        docTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //Allow the user to only select a single row at a time
 
-        UtilDateModel udm = new UtilDateModel();
-        JDatePicker datePicker = new JDatePicker(udm);
+        DatePicker datePicker = new DatePicker();
+        TimePicker timePicker = new TimePicker();
 
         JPanel dateTimePanel = new JPanel();
         dateTimePanel.setBounds(0,250,500,100);
         dateTimePanel.setBackground(Color.RED);
-        dateTimePanel.add(datePicker);
+        dateTimePanel.add(datePicker);  //Pick the consultation date
+        dateTimePanel.add(timePicker);  //Pick the consultation time
         dateTimePanel.setVisible(false);
-        frame1.add(dateTimePanel);
 
         JButton selectDocBtn = new JButton("Select Doctors");
-            selectDocBtn.setBounds(150,100,200,50);
-            frame1.add(selectDocBtn);
-            selectDocBtn.addActionListener(e -> dateTimePanel.setVisible(true));
+        selectDocBtn.setBounds(150,100,200,50);
+        selectDocBtn.addActionListener(e -> {
+            int index = docTable.getSelectedRow();
+            Object selectedCellValue = docTable.getValueAt(index, 4);    //Get the value of 5 th column
+            for (Doctor d : WestminsterSkinConsultationManager.doctorList) {
+                if (String.valueOf(d.getLicenceNo()).equals(String.valueOf(selectedCellValue))) {
+                    System.out.println(d.getName());
+                    break;
+                }
+            }
+            dateTimePanel.setVisible(true);
+            ;});
 
 
-        JButton docTableBtn = new JButton("Consult Doctors");
-            docTableBtn.setPreferredSize(new Dimension(100, 50));
-            frame1.add(docTableBtn, BorderLayout.SOUTH);
-            docTableBtn.addActionListener(e -> frame1.setVisible(false));
-            docTableBtn.addActionListener(e -> frame2.setVisible(true));
+        JButton consultDocBtn = new JButton("Consult Doctors");
+        consultDocBtn.setPreferredSize(new Dimension(100, 50));
+        consultDocBtn.addActionListener(e -> {
+            LocalDate selectedDate = datePicker.getDate();
+            LocalTime selectedTime = timePicker.getTime();
+            System.out.println(selectedDate);
+            System.out.println(selectedTime);
+            frame1.setVisible(false);
+            frame2.setVisible(true);
+        });
 
 
-        JTable docTable = new JTable(dtm);
-            frame1.add(docTable);
-            docTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //Allow the user to only select a single row at a time
-
-
+        frame1.add(dateTimePanel);
+        frame1.add(selectDocBtn);
+        frame1.add(consultDocBtn, BorderLayout.SOUTH);
+        frame1.add(docTable);
 
     }
-    }
+}
 
 
     /*

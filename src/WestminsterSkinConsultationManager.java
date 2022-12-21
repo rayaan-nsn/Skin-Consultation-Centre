@@ -12,6 +12,7 @@ import java.util.Scanner;
 public class WestminsterSkinConsultationManager implements SkinConsultationManager{
 
     static ArrayList<Doctor> doctorList = new ArrayList<>();
+    static ArrayList<Patient> patientList = new ArrayList<>();
     static ArrayList<Consultation> consultationList = new ArrayList<>();
 
     public static void main(String[] args) {
