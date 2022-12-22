@@ -79,12 +79,10 @@ public class WSCFrame extends JFrame{
         //Automatic create a unique patientID using the ArrayList index
         String patientID = "ID-" + WestminsterSkinConsultationManager.patientList.size()+1;
 
-        int tempInt = 1;
-
         JButton submitPatientDetails = new JButton("Submit Details");
         submitPatientDetails.setPreferredSize(new Dimension(100, 50));
         submitPatientDetails.addActionListener(e -> {
-            WestminsterSkinConsultationManager.patientList.add(new Patient(inputPatientName.getText(),inputPatientSurName.getText(),tempInt,(int) inputPatientMobNo.getValue(),patientID));
+            WestminsterSkinConsultationManager.patientList.add(new Patient(inputPatientName.getText(),inputPatientSurName.getText(),pickPatientDOB.getDate(),(int) inputPatientMobNo.getValue(),patientID));
             
                 });
 

@@ -1,13 +1,14 @@
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Person implements Serializable {   //Super Class
     private String name;
     private String surname;
-    private int dateOfBirth;
+    private LocalDate dateOfBirth;
     private int mobilNo;
 
-    public Person(String name, String surname, int dateOfBirth, int mobilNo){
+    public Person(String name, String surname, LocalDate dateOfBirth, int mobilNo){
         this.name = name;
         this.surname = surname;
         this.dateOfBirth = dateOfBirth;
@@ -24,7 +25,7 @@ public class Person implements Serializable {   //Super Class
         return surname;
     }
 
-    public int getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
@@ -40,7 +41,7 @@ public class Person implements Serializable {   //Super Class
         this.surname = surname;
     }
 
-    public void setDateOfBirth(int dateOfBirth) {
+    public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 

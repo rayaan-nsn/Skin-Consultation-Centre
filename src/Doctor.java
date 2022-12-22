@@ -1,13 +1,14 @@
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Doctor extends Person implements Serializable {  //Subclass of person
 
     // Fields for the doctor's medical license number and specialization
-    private int licenceNo;
+    private String licenceNo;
     private String specialisation;
 
-    public Doctor(String name, String surname, int dateOfBirth, int mobilNo, int licenceNo, String specialisation) {
+    public Doctor(String name, String surname, LocalDate dateOfBirth, int mobilNo, String licenceNo, String specialisation) {
         super(name, surname, dateOfBirth, mobilNo);
         this.specialisation = specialisation;
         this.licenceNo = licenceNo;
@@ -15,7 +16,7 @@ public class Doctor extends Person implements Serializable {  //Subclass of pers
 
     // Setter methods for the license number and specialization fields
 
-    public void setLicenceNo(int licenceNo) {
+    public void setLicenceNo(String licenceNo) {
         this.licenceNo = licenceNo;
     }
 
@@ -25,7 +26,7 @@ public class Doctor extends Person implements Serializable {  //Subclass of pers
 
     // Getter methods for the license number and specialization fields
 
-    public int getLicenceNo() {
+    public String getLicenceNo() {
         return licenceNo;
     }
 

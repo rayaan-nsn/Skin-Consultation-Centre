@@ -1,6 +1,7 @@
 import javax.print.Doc;
 import javax.swing.*;
 import java.io.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 //import java.io.FileOutputStream;
 //import java.io.ObjectOutputStream;
@@ -18,17 +19,17 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
     public static void main(String[] args) {
 
         //Temporary doctors for testing
-        doctorList.add(new Doctor("John", "Doe", 19800101, 123456, 12345, "Pediatrics"));
-        doctorList.add(new Doctor("Jane", "Anderson", 19700202, 234567, 23456, "Surgery"));
-        doctorList.add(new Doctor("Robert", "Johnson", 19600303, 34567, 34567, "Orthopedics"));
-        doctorList.add(new Doctor("Mary", "Williams", 19500404, 456789, 45678, "Cardiology"));
-        doctorList.add(new Doctor("David", "Brown", 19400505, 567890, 56789, "Oncology"));
+        doctorList.add(new Doctor("John", "Doe", LocalDate.of(1980, 01,01), 123456, "d12345", "Pediatrics"));
+        doctorList.add(new Doctor("Jane", "Anderson", LocalDate.of(1970,02,02), 234567, "d23456", "Surgery"));
+        doctorList.add(new Doctor("Robert", "Johnson", LocalDate.of(1960,03,03), 34567, "d34567", "Orthopedics"));
+        doctorList.add(new Doctor("Mary", "Williams", LocalDate.of(1950,04,04), 456789, "d45678", "Cardiology"));
+        doctorList.add(new Doctor("David", "Brown", LocalDate.of(1940,05,05), 567890, "d56789", "Oncology"));
         //Temporary doctors for testing
 
         //readInfo();
-        //displayMenu();
+        displayMenu();
 
-        openGUI();  //Temporary for testing
+//        openGUI();  //Temporary for testing
     }
 
     public static void displayMenu(){
@@ -70,16 +71,17 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             String docName = scanner.next();
             System.out.print("Enter doctor surname : ");
             String docSurName = scanner.next();
-            System.out.print("Enter doctor DOB : ");
-            int docDOB = scanner.nextInt();
+            System.out.print("Enter doctor DOB (YYYY-MM-DD) : ");
+            LocalDate docDOB = LocalDate.parse(scanner.next());
             System.out.print("Enter doctor Mobile Number : ");
             int docPNo = scanner.nextInt();
             System.out.print("Enter doctor License Number : ");
-            int docLicenseNo = scanner.nextInt();
+            String docLicenseNo = scanner.next();
             System.out.print("Enter doctor specialisation : ");
             String docSpecialisation = scanner.next();
 
             doctorList.add(new Doctor(docName, docSurName, docDOB, docPNo, docLicenseNo, docSpecialisation));
+            System.out.println("Dr." + docName + " " + docSurName + " added successfully");
 
         } else {
             System.out.println("Doctor List is full");
@@ -89,35 +91,44 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
     public static void removeDoctor(){
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter doctor licence No to remove : ");
-        int docLicenceNo = scanner.nextInt();
-        try {
-            //doctorList.removeIf(doctor -> doctor.getLicenceNo() == docLicenceNo);
-            for (int i = 0; i <= doctorList.size(); i++) {
+        String docLicenceNo = scanner.next();
+        //try {
+                if (doctorList.removeIf(doctor -> String.valueOf(doctor.getLicenceNo()).equals(String.valueOf(docLicenceNo)))){
+                    System.out.println("Removed successfully");
+                    System.out.println(doctorList.size() + " doctors available");
+                }else {
+                    System.out.println("No such doctor available");
+                }
+
+
+//            System.out.println("Removed successfully");
+            /*for (int i = 0; i <= doctorList.size(); i++) {
                 if (doctorList.get(i).getLicenceNo() == docLicenceNo) {
                     Doctor deletedDocCopy = doctorList.get(i);  //Get a copy of doctor element
                     doctorList.remove(i);
                     System.out.println("Successfully Removed Dr." + deletedDocCopy.getName() + " " + deletedDocCopy.getSurname());
                     System.out.println(doctorList.size() + " doctors available");
+                    break;
                 } else {
                     System.out.println("Licence No. not found");
-                    break;
+//                    break;
                 }
-            }
-        }catch (IndexOutOfBoundsException e){
-            System.out.println("No such doctor");
-        }
+            }*/
+//        }catch (InputMismatchException e){
+//            System.out.println("Enter integers only");
+//        }
     }
 
     public static void printDocList(){
         ArrayList<Doctor> doctorListCopy = (ArrayList<Doctor>) doctorList.clone();
         doctorListCopy.sort(Comparator.comparing(Doctor::getSurname));
-        System.out.println("Name ---- Surname ---- DOB -------- Mobile ----- Licence ---- Specialisation");
+        System.out.println("Name ---- Surname ---- DOB ---------- Mobile ----- Licence ---- Specialisation");
         for (Doctor doc : doctorListCopy){
             System.out.printf("%-10s",doc.getName());
             System.out.printf("%-13s",doc.getSurname());
-            System.out.printf("%-13d",doc.getDateOfBirth());
+            System.out.printf("%-15s",doc.getDateOfBirth().toString());
             System.out.printf("%-13d",doc.getMobilNo());
-            System.out.printf("%-13d",doc.getLicenceNo());
+            System.out.printf("%-13s",doc.getLicenceNo());
             System.out.printf("%-13s \n",doc.getSpecialisation() );
         }
     }
