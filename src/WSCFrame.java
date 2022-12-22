@@ -69,7 +69,7 @@ public class WSCFrame extends JFrame{
         DatePicker pickPatientDOB = new DatePicker();
         patientDetailsPanel.add(pickPatientDOB);
 
-        patientDetailsPanel.add(new JLabel("<html><br></html>"));   //Newline
+//        patientDetailsPanel.add(new JLabel("<html><br></html>"));   //Newline
 
         JLabel patientMobNo = new JLabel("Enter mobile no.");
         patientDetailsPanel.add(patientMobNo);

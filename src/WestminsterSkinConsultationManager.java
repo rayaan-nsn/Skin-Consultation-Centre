@@ -2,6 +2,7 @@ import javax.print.Doc;
 import javax.swing.*;
 import java.io.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 //import java.io.FileOutputStream;
 //import java.io.ObjectOutputStream;
@@ -23,13 +24,22 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         doctorList.add(new Doctor("Jane", "Anderson", LocalDate.of(1970,02,02), 234567, "d23456", "Surgery"));
         doctorList.add(new Doctor("Robert", "Johnson", LocalDate.of(1960,03,03), 34567, "d34567", "Orthopedics"));
         doctorList.add(new Doctor("Mary", "Williams", LocalDate.of(1950,04,04), 456789, "d45678", "Cardiology"));
-        doctorList.add(new Doctor("David", "Brown", LocalDate.of(1940,05,05), 567890, "d56789", "Oncology"));
+
+        patientList.add(new Patient("Aqeel","Mohamed", LocalDate.of(1975,04,05), 865743,"ID-01"));
+        patientList.add(new Patient("Muhammad", "Ali", LocalDate.of(1975, 4, 5), 865743, "ID-01"));
+        patientList.add(new Patient("Fatima", "Zahra", LocalDate.of(1985, 6, 20), 912876, "ID-02"));
+        patientList.add(new Patient("Ali", "Talib", LocalDate.of(1995, 8, 15), 734986, "ID-03"));
+
+        consultationList.add(new Consultation(doctorList.get(1),patientList.get(0),LocalDate.of(2001,12,29), LocalTime.of(1,0,0),30,"Doc 1, Pat 0"));
+        consultationList.add(new Consultation(doctorList.get(1), patientList.get(1), LocalDate.of(2001, 12, 29), LocalTime.of(2, 0, 0), 30, "Doc 1, Pat 1"));
+        consultationList.add(new Consultation(doctorList.get(2), patientList.get(2), LocalDate.of(2002, 1, 1), LocalTime.of(3, 0, 0), 50, "Doc 2, Pat 2"));
+        consultationList.add(new Consultation(doctorList.get(2), patientList.get(3), LocalDate.of(2003, 2, 14), LocalTime.of(4, 0, 0), 40, "Doc 2, Pat 3"));
         //Temporary doctors for testing
 
         //readInfo();
-        displayMenu();
+        //displayMenu();
 
-//        openGUI();  //Temporary for testing
+        openGUI();  //Temporary for testing
     }
 
     public static void displayMenu(){
@@ -65,7 +75,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
     }
 
     public static void addDoctor(){
-        if (doctorList.size()<=10) {
+        if (doctorList.size()<10) {
             Scanner scanner = new Scanner(System.in);
             System.out.print("Enter doctor name : ");
             String docName = scanner.next();
@@ -93,7 +103,8 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         System.out.print("Enter doctor licence No to remove : ");
         String docLicenceNo = scanner.next();
         //try {
-                if (doctorList.removeIf(doctor -> String.valueOf(doctor.getLicenceNo()).equals(String.valueOf(docLicenceNo)))){
+                if (doctorList.removeIf(doctor ->
+                        String.valueOf(doctor.getLicenceNo()).equals(String.valueOf(docLicenceNo)))){
                     System.out.println("Removed successfully");
                     System.out.println(doctorList.size() + " doctors available");
                 }else {
@@ -168,6 +179,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
 /* <<< ------------------------------ GUI (Phase 3) ------------------------------ >>> */
 
     public static void openGUI(){
-            WSCFrame WSCFrame = new WSCFrame();
+            //WSCFrame WSCFrame = new WSCFrame();
+        ConsultationGUI consultationGUI = new ConsultationGUI();
     }
 }
