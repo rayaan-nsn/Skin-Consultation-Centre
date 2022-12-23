@@ -28,7 +28,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         patientList.add(new Patient("Aqeel","Mohamed", LocalDate.of(1975,04,05), 865743,"ID-01"));
         patientList.add(new Patient("Muhammad", "Ali", LocalDate.of(1975, 4, 5), 865743, "ID-01"));
         patientList.add(new Patient("Fatima", "Zahra", LocalDate.of(1985, 6, 20), 912876, "ID-02"));
-        patientList.add(new Patient("Ali", "Talib", LocalDate.of(1995, 8, 15), 734986, "ID-03"));
+        patientList.add(new Patient("Ali", "Thalib", LocalDate.of(1995, 8, 15), 734986, "ID-03"));
 
         consultationList.add(new Consultation(doctorList.get(1),patientList.get(0),LocalDate.of(2001,12,29), LocalTime.of(1,0,0),30,"Doc 1, Pat 0"));
         consultationList.add(new Consultation(doctorList.get(1), patientList.get(1), LocalDate.of(2001, 12, 29), LocalTime.of(2, 0, 0), 30, "Doc 1, Pat 1"));
