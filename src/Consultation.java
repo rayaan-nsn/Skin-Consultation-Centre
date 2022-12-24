@@ -52,6 +52,9 @@ public class Consultation {
         return this.doctor;
     }
 
+    public Patient getPatient() {
+        return this.patient;
+    }
 
     public LocalDate getDate() {
         return date;
@@ -60,6 +63,8 @@ public class Consultation {
     public LocalTime getTime(){
         return time;
     }
+
+
 
     public double getCost() {
         return cost;
