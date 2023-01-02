@@ -12,6 +12,14 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 
+// Read the saved file first
+// Handle public interface SkinConsultationManager
+// If its first time or second time, calculate according to that
+// Need to get patient NIC no. Not create patient ID
+// Encrypt patient details
+// Able to go through consultation hours and show not available
+// Show consultation List
+
 public class ConsultationGUI extends JFrame {
 
     static int cost;
@@ -21,11 +29,20 @@ public class ConsultationGUI extends JFrame {
 
 
     ConsultationGUI(){
+
+        JFrame consultationDetailsFrame = new JFrame("Westminster Skin Care Centre");
+        consultationDetailsFrame.setSize(700,600); // set the size of the frame
+        consultationDetailsFrame.setLocationRelativeTo(null);  // center the frame on the screen
+        consultationDetailsFrame.setResizable(false);
+        consultationDetailsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //Exit out of application
+        //viewConsultationDetails(consultationDetailsFrame);
+        consultationDetailsFrame.setVisible(false);
+
         //Frame 3
         JFrame finalFrame = new JFrame("Westminster Skin Care Centre");
         frameProperties(finalFrame);
-        viewPatientDetails(finalFrame);
-        finalFrame.setVisible(true);
+        viewPatientDetails(finalFrame, consultationDetailsFrame);
+        finalFrame.setVisible(false);
 
         //Frame 2
         JFrame patientDetailsFrame = new JFrame("Westminster Skin Care Centre");
@@ -37,7 +54,7 @@ public class ConsultationGUI extends JFrame {
         JFrame docCheckFrame = new JFrame("Westminster Skin Care Centre");
         frameProperties(docCheckFrame);
         docAvailable(docCheckFrame,patientDetailsFrame);
-        docCheckFrame.setVisible(false);
+        docCheckFrame.setVisible(true);
     }
     void frameProperties(JFrame frame){
         frame.setSize(500,600); // set the size of the frame
@@ -76,7 +93,7 @@ public class ConsultationGUI extends JFrame {
 
         String[] columnNames = {"Name", "Surname","Mobile No","Licence No","Specialisation"};
         DefaultTableModel dtm = new DefaultTableModel(columnNames, 0);
-        for (Doctor d : WestminsterSkinConsultationManager.doctorList) {
+        for (Doctor d : WestminsterSkinConsultationManager.doctorList) {    // for(i=0; i<WestminsterSkinConsultationManager.doctorList.size(); i++)
             dtm.addRow(new String[]{
                     d.getName(),
                     d.getSurname(),
@@ -342,7 +359,8 @@ public class ConsultationGUI extends JFrame {
         patientDetailsPanel.add(new JLabel("<html><br></html>"));
 
         //Automatic create a unique patientID using the ArrayList index
-        String patientID = "ID-" + WestminsterSkinConsultationManager.patientList.size()+1;
+        int patientIDNo = WestminsterSkinConsultationManager.patientList.size() + 1;
+        String patientID = "ID-" + patientIDNo;
 
         // Create a JLabel
         JLabel label = new JLabel("Upload an image");
@@ -423,7 +441,7 @@ public class ConsultationGUI extends JFrame {
 
     }
 
-    public static void viewPatientDetails(JFrame frame3){
+    public static void viewPatientDetails(JFrame frame3, JFrame frame4){
 
         /* <<<--- Display success --->>> */
         JPanel successPanel = new JPanel();
@@ -440,6 +458,10 @@ public class ConsultationGUI extends JFrame {
         JButton viewDetails = new JButton("View Details");
         viewDetails.setPreferredSize(new Dimension(170, 40));
         successPanel.add(viewDetails);
+        viewDetails.addActionListener(e ->{
+            viewConsultationDetails(frame4);
+            frame4.setVisible(true);
+        });
 
         frame3.add(successPanel);
 
@@ -463,9 +485,99 @@ public class ConsultationGUI extends JFrame {
         frame3.add(freePanel);
     }
 
+
+    public static void viewConsultationDetails(JFrame frame4){
+        JPanel consultationTablePanel = new JPanel();
+        consultationTablePanel.setBounds(0,70,700,200);
+        consultationTablePanel.setBackground(Color.LIGHT_GRAY);
+
+        String[] columnNames = {"Patient ID", "Patient's Name","Doctor", "Date", "Time", "Cost (£)","Patient DOB", "Notes"};
+        DefaultTableModel dtm = new DefaultTableModel(columnNames, 0);
+        for (Consultation c : WestminsterSkinConsultationManager.consultationList) {    // for(i=0; i<WestminsterSkinConsultationManager.doctorList.size(); i++)
+            dtm.addRow(new String[]{
+                    c.getPatient().getPatientID(),
+                    c.getPatient().getName() + " " + c.getPatient().getSurname(),
+                    c.getDoctor().getName() + " " + c.getDoctor().getSurname(),
+                    String.valueOf(c.getDate()),
+                    String.valueOf(c.getTime()),
+                    String.valueOf(c.getCost()),
+                    String.valueOf(c.getPatient().getDateOfBirth()),
+                    c.getNotes()
+            });
+        }
+
+        JTable consultationDetailsTable = new JTable(dtm);
+        consultationDetailsTable.setRowHeight(30);  //set the row height
+        consultationDetailsTable.getColumnModel().getColumn(0).setPreferredWidth(35);  //column width
+        consultationDetailsTable.getColumnModel().getColumn(1).setPreferredWidth(100);
+        consultationDetailsTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+        consultationDetailsTable.getColumnModel().getColumn(3).setPreferredWidth(80);
+        consultationDetailsTable.getColumnModel().getColumn(4).setPreferredWidth(40);
+        consultationDetailsTable.getColumnModel().getColumn(5).setPreferredWidth(40);
+        consultationDetailsTable.getColumnModel().getColumn(6).setPreferredWidth(80);
+
+        TableRowSorter<DefaultTableModel> myTRS = new TableRowSorter<>(dtm);
+        consultationDetailsTable.setRowSorter(myTRS);   //Sort the table
+
+        consultationDetailsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //Allow to select a single row at a time
+
+        JScrollPane scrollPane = new JScrollPane(consultationDetailsTable); //Make table scrollable
+        scrollPane.setPreferredSize(new Dimension(650, 190));
+
+        consultationTablePanel.add(scrollPane);
+
+        frame4.add(consultationTablePanel);
+
+
+        //JTable docTable = new JTable(dtm);
+
+        //TableRowSorter<DefaultTableModel> myTRS = new TableRowSorter<>(dtm);
+        //docTable.setRowSorter(myTRS);   //Sort the table
+
+        //docTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //Allow to select a single row at a time
+        //JScrollPane scrollPane = new JScrollPane(docTable); //Make table scrollable
+        //scrollPane.setPreferredSize(new Dimension(480, 150));
+        //docTablePanel.add(scrollPane);
+
+        //frame1.add(docTablePanel);
+
+        /* <<<--- Free Panel --->>> */
+        JPanel freePanel = new JPanel();
+        //freePanel.setBackground(Color.pink);
+        frame4.add(freePanel);
+
+    }
+
 }
 
 
 
 
 
+    /*
+To implement the GUI for a doctor-patient consultation software according to the requests specified above, you can follow these steps:
+
+1.Create a table to display the list of doctors with their name, age, and other relevant information.
+You can use the JTable component provided by the Java Swing library to create the table.
+
+2.Implement a sorting function to allow the user to sort the list of doctors alphabetically.
+You can use the Collections.sort method to sort the list of doctors, and then update the table with the sorted list.
+
+3.Add a button or other UI element that allows the user to select a doctor and book a consultation.
+When the user clicks this button, you can display a form that allows the user to enter the patient's information,
+such as name, surname, date of birth, and mobile number.
+
+4.Implement a function to check the availability of the doctor at the chosen date and time.
+If the doctor is not available, you can use the Collections.shuffle method to randomly select an available doctor
+from the list of all available doctors.
+
+5.Implement a function to calculate the cost of the consultation based on the length of the consultation and
+the rate specified in the request. You can use this function to display the cost to the user and
+allow them to confirm the consultation.
+
+6.Implement a function to encrypt the notes entered by the user using a suitable encryption algorithm.
+You can use an available API such as the Java Cryptography Extension (JCE) to handle the encryption.
+
+7.Implement a way for the user to view the stored information for a consultation, including the patient info,
+cost, and encrypted notes. This can be done by displaying the information in a form or a separate window.
+    */
