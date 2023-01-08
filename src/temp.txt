@@ -1,0 +1,138 @@
+            }else
+            {
+                for (Patient p : WestminsterSkinConsultationManager.patientList) {
+                    if (getPatientNICNo.getText().equals(p.getPatientNIC())) {
+                        cost = hours * 25;
+                    } else {
+                        cost = hours * 15;
+                    }
+                }
+
+                char[] password = "mypassword".toCharArray();
+                byte[] salt = "mysalt".getBytes();
+                int iterations = 1000;
+                int keyLength = 128;
+
+
+                try {
+                    key = generateKey(password, salt, iterations, keyLength);
+//                    if (!key.getAlgorithm().equals("AES")) {
+//                        System.err.println("Error: Generated key is not an AES key");
+//                        return;
+//                    }
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+//                    System.err.println("Error generating key: " + ex.getMessage());
+                    return;
+                }
+
+                String message = getPatientNotes.getText(); // Get user input
+
+                // Initialize Cipher for encryption
+                Cipher cipher;
+                try {
+                    cipher = Cipher.getInstance("AES");
+                    cipher.init(Cipher.ENCRYPT_MODE, key);
+                } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException ex) {
+//                    System.err.println("Error initializing cipher: " + ex.getMessage());
+                    return;
+                }
+
+                byte[] cipherText;
+                String test;
+                try {
+                    cipherText = cipher.doFinal(message.getBytes());
+                    test = Base64.getEncoder().encodeToString(cipherText);
+                } catch (IllegalBlockSizeException | BadPaddingException ex) {
+//                    System.err.println("Error encrypting message: " + ex.getMessage());
+                    return;
+                }
+
+
+                Patient patient = new Patient(getPatientName.getText(), getPatientSurName.getText(),
+                        pickPatientDOB.getDate(), ((Number) getPatientMobNo.getValue()).intValue(), patientID.get(), getPatientNICNo.getText());    //Create a new patient
+                WestminsterSkinConsultationManager.patientList.add(patient);    //Assign the new patient in to the patient-list array
+                WestminsterSkinConsultationManager.consultationList.add(new Consultation(
+                        assignedDoc, patient, date, startTime, hours, cost, test)); //Add consultation
+
+//                WestminsterSkinConsultationManager w = new WestminsterSkinConsultationManager();
+//                w.saveInfo();
+
+                viewStatusNCost(frame0, frame1, frame2, frame3, frame4, cost);
+                frame3.setVisible(true);
+                frame2.setVisible(false);
+
+                //<<<--- Clear user inputs for getting inputs next time --->>>
+                getPatientName.setText(null);
+                getPatientSurName.setText(null);
+                pickPatientDOB.setDate(null);
+                getPatientNICNo.setText(null);
+                getPatientMobNo.setValue(0);
+                getPatientNotes.setText(null);
+                int patIDNo = WestminsterSkinConsultationManager.patientList.size() + 1;
+                patientID.set("ID-" + patIDNo);
+
+            }
+
+
+
+
+            -----------------------------------------------------------------------------
+
+            for (Consultation c : WestminsterSkinConsultationManager.consultationList) {
+                                    if (String.valueOf(c.getPatient().getPatientID()).equals(String.valueOf(selectedCellValue))) {
+                                        Object fName = c.getPatient().getName() + " " + c.getPatient().getSurname();
+                                        Object dFName = c.getDoctor().getName() + " " + c.getDoctor().getSurname();
+                                        Object cDateTime = c.getDate() + " " + c.getTime();
+                                        //selectedConsultation = c;
+                                        pFullName.setText(String.valueOf(fName));
+                                        pDOB.setText(String.valueOf(c.getPatient().getDateOfBirth()));
+                                        pNIC.setText(String.valueOf(c.getPatient().getPatientNIC()));
+                                        pMobNo.setText(String.valueOf(c.getPatient().getMobilNo()));
+                                        pDoc.setText(String.valueOf(dFName));
+                                        pDocLN.setText(String.valueOf(c.getDoctor().getLicenceNo()));
+                                        pDateTime.setText(String.valueOf(cDateTime));
+                                        pHours.setText(String.valueOf(c.getConsultHour()));
+                                        pCost.setText(String.valueOf(c.getCost()));
+            //                            pNotes.setText(c.getNotes());
+
+                                        // Initialize Cipher for decryption
+                                        Cipher cipher;
+                                        try {
+                                            cipher = Cipher.getInstance("AES");
+                                            cipher.init(Cipher.DECRYPT_MODE, key);
+                                        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException ex) {
+                                            System.err.println("Error initializing cipher: " + ex.getMessage());
+                                            return;
+                                        }
+
+                                        byte[] decryptedMessage;
+                                        try {
+                                            decryptedMessage = cipher.doFinal(Base64.getDecoder()
+                                                    .decode(c.getNotes()));
+                                        } catch (IllegalBlockSizeException | BadPaddingException ex) {
+                                            System.err.println("Error decrypting message: " + ex.getMessage());
+                                            return;
+                                        }
+
+            // Convert decrypted message to a string
+                                        String decryptedString = new String(decryptedMessage);
+
+                                        pNotes.setText(decryptedString);
+
+            //                            try {
+            //                                cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            //                            } catch (InvalidKeyException ex) {
+            //                                throw new RuntimeException(ex);
+            //                            }
+            //                            byte[] decryptedInput = new byte[0];
+            //                            try {
+            //                                decryptedInput = cipher.doFinal(c.getNotes().getBytes());
+            //                            } catch (IllegalBlockSizeException | BadPaddingException ex) {
+            //                                throw new RuntimeException(ex);
+            //                            }
+            //                            String output = new String(decryptedInput);
+            //                            pNotes.setText(output);
+
+                                        break;
+                                    }
+                                }

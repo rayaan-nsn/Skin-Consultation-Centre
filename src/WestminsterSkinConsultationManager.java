@@ -1,10 +1,11 @@
-
-
 import javax.print.Doc;
 import javax.swing.*;
 import java.io.*;
+import java.sql.SQLOutput;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 //import java.io.FileOutputStream;
 //import java.io.ObjectOutputStream;
@@ -27,21 +28,23 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         doctorList.add(new Doctor("Robert", "Johnson", LocalDate.of(1960,03,03), 34567, "d34567", "Orthopedics"));
         doctorList.add(new Doctor("Mary", "Williams", LocalDate.of(1950,04,04), 456789, "d45678", "Cardiology"));
 
-        patientList.add(new Patient("Aqeel","Mohamed", LocalDate.of(1975,04,05), 865743,"ID-1"));
-        patientList.add(new Patient("Muhammad", "Ali", LocalDate.of(1975, 4, 5), 865743, "ID-2"));
-        patientList.add(new Patient("Fatima", "Zahra", LocalDate.of(1985, 6, 20), 912876, "ID-3"));
-        patientList.add(new Patient("Ali", "Thalib", LocalDate.of(1995, 8, 15), 734986, "ID-4"));
+//        patientList.add(new Patient("Aqeel","Mohamed", LocalDate.of(1975,04,05), 865743,"ID-1","3425676h"));
+//        patientList.add(new Patient("Muhammad", "Ali", LocalDate.of(1975, 4, 5), 865743, "ID-2", "328765v"));
+//        patientList.add(new Patient("Fatima", "Zahra", LocalDate.of(1985, 6, 20), 912876, "ID-3", "7654342"));
+//        patientList.add(new Patient("Ali", "Thalib", LocalDate.of(1995, 8, 15), 734986, "ID-4", "5324657"));
+//
+//        consultationList.add(new Consultation(doctorList.get(1),patientList.get(0),LocalDate.of(2023,01,29), LocalTime.of(1,0,0),1,30,"Doc 1, Pat 0"));
+//        consultationList.add(new Consultation(doctorList.get(1), patientList.get(1), LocalDate.of(2001, 12, 29), LocalTime.of(2, 0, 0),3, 30, "Doc 1, Pat 1"));
+//        consultationList.add(new Consultation(doctorList.get(2), patientList.get(2), LocalDate.of(2002, 1, 1), LocalTime.of(3, 0, 0),4, 50, "Doc 2, Pat 2"));
+//        consultationList.add(new Consultation(doctorList.get(2), patientList.get(3), LocalDate.of(2003, 2, 14), LocalTime.of(4, 0, 0),1, 40, "Doc 2, Pat 3"));
+//
 
-        consultationList.add(new Consultation(doctorList.get(1),patientList.get(0),LocalDate.of(2001,12,29), LocalTime.of(1,0,0),30,"Doc 1, Pat 0"));
-        consultationList.add(new Consultation(doctorList.get(1), patientList.get(1), LocalDate.of(2001, 12, 29), LocalTime.of(2, 0, 0), 30, "Doc 1, Pat 1"));
-        consultationList.add(new Consultation(doctorList.get(2), patientList.get(2), LocalDate.of(2002, 1, 1), LocalTime.of(3, 0, 0), 50, "Doc 2, Pat 2"));
-        consultationList.add(new Consultation(doctorList.get(2), patientList.get(3), LocalDate.of(2003, 2, 14), LocalTime.of(4, 0, 0), 40, "Doc 2, Pat 3"));
-        //Temporary doctors for testing
+//      //Temporary doctors for testing
 
         //readInfo();
-        //displayMenu();
+        displayMenu();
 
-        openGUI();  //Temporary for testing
+        //openGUI();  //Temporary for testing
     }
 
     public static void displayMenu(){
@@ -55,52 +58,65 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                     2. Delete a doctor
                     3. Print the list of doctors
                     4. Save the information
-                    5. Read the info
                     10. GUI
                     0. Exit the system
                 --------------------------------------------------------------
                 """);
+
+        WestminsterSkinConsultationManager wscm = new WestminsterSkinConsultationManager();
+        //wscm.readInfo();
+
         while (true) {
-            System.out.print("Enter option : ");
+            try {
+                System.out.print("Enter option : ");
                 int choice = scanner.nextInt();
                 switch (choice) {
-                    case 1 -> addDoctor();
-                    case 2 -> removeDoctor();
-                    case 3 -> printDocList();
-                    case 4 -> saveInfo();
-                    case 5 -> readInfo();
-                    case 10 -> openGUI();
+                    case 1 -> wscm.addDoctor();
+                    case 2 -> wscm.removeDoctor();
+                    case 3 -> wscm.printDocList();
+                    case 4 -> wscm.saveInfo();
+                    case 5 -> wscm.readInfo();
+                    case 10 -> wscm.openGUI();
                     case 0 -> System.exit(0);
                     default -> System.out.println("Invalid selection, Try again...");
                 }
+            }catch (InputMismatchException e){
+                System.out.println("Enter integers only");
+                scanner.nextLine();
+            }
         }
     }
 
-    public static void addDoctor(){
+    public void addDoctor(){
         if (doctorList.size()<10) {
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("Enter doctor name : ");
-            String docName = scanner.next();
-            System.out.print("Enter doctor surname : ");
-            String docSurName = scanner.next();
-            System.out.print("Enter doctor DOB (YYYY-MM-DD) : ");
-            LocalDate docDOB = LocalDate.parse(scanner.next());
-            System.out.print("Enter doctor Mobile Number : ");
-            int docPNo = scanner.nextInt();
-            System.out.print("Enter doctor License Number : ");
-            String docLicenseNo = scanner.next();
-            System.out.print("Enter doctor specialisation : ");
-            String docSpecialisation = scanner.next();
+            try {
+                Scanner scanner = new Scanner(System.in);
+                System.out.print("Enter doctor name : ");
+                String docName = scanner.next();
+                System.out.print("Enter doctor surname : ");
+                String docSurName = scanner.next();
+                System.out.print("Enter doctor DOB (YYYY-MM-DD) : ");
+                LocalDate docDOB = LocalDate.parse(scanner.next());
+                System.out.print("Enter doctor Mobile Number : ");
+                int docPNo = scanner.nextInt();
+                System.out.print("Enter doctor License Number : ");
+                String docLicenseNo = scanner.next();
+                System.out.print("Enter doctor specialisation : ");
+                String docSpecialisation = scanner.next();
 
-            doctorList.add(new Doctor(docName, docSurName, docDOB, docPNo, docLicenseNo, docSpecialisation));
-            System.out.println("Dr." + docName + " " + docSurName + " added successfully");
+                doctorList.add(new Doctor(docName, docSurName, docDOB, docPNo, docLicenseNo, docSpecialisation));
+                System.out.println("Dr." + docName + " " + docSurName + " added successfully");
+
+            }catch (DateTimeParseException e){
+                System.out.println("Invalid date format");
+            }
 
         } else {
             System.out.println("Doctor List is full");
         }
     }
 
-    public static void removeDoctor(){
+    public void removeDoctor(){
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter doctor licence No to remove : ");
         String docLicenceNo = scanner.next();
@@ -132,7 +148,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
 //        }
     }
 
-    public static void printDocList(){
+    public void printDocList(){
         ArrayList<Doctor> doctorListCopy = (ArrayList<Doctor>) doctorList.clone();
         doctorListCopy.sort(Comparator.comparing(Doctor::getSurname));
         System.out.println("Name ---- Surname ---- DOB ---------- Mobile ----- Licence ---- Specialisation");
@@ -145,7 +161,8 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             System.out.printf("%-13s \n",doc.getSpecialisation() );
         }
     }
-    public static void saveInfo() {
+
+    public void saveInfo() {
         try {
             // Create a FileOutputStream to write the object to a file
             FileOutputStream fos = new FileOutputStream("list.ser");
@@ -155,6 +172,8 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
 
             // Write the ArrayList object to the file
             oos.writeObject(doctorList);
+            oos.writeObject(patientList);
+            oos.writeObject(consultationList);
             System.out.println("Saved successfully");
 
             // Close the ObjectOutputStream and FileOutputStream
@@ -166,11 +185,13 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
-    public static void readInfo() {
+    public void readInfo() {
         try {
             FileInputStream fis = new FileInputStream("list.ser");
             ObjectInputStream ois = new ObjectInputStream(fis);
             doctorList = (ArrayList<Doctor>) ois.readObject();
+            patientList = (ArrayList<Patient>) ois.readObject();
+            consultationList = (ArrayList<Consultation>) ois.readObject();
             ois.close();
             fis.close();
         } catch (IOException |ClassCastException | ClassNotFoundException e) {
@@ -180,9 +201,11 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
 
 /* <<< ------------------------------ GUI (Phase 3) ------------------------------ >>> */
 
-    public static void openGUI(){
+    public void openGUI(){
             //WSCFrame WSCFrame = new WSCFrame();
         ConsultationGUI consultationGUI = new ConsultationGUI();
 
     }
+
+
 }

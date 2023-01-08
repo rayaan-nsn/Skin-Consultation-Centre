@@ -1,70 +1,81 @@
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.TimePicker;
 
+import javax.crypto.*;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.print.Doc;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 
+import java.security.SecureRandom;
+import java.util.Scanner;
+
 // Read the saved file first
-// Handle public interface SkinConsultationManager
-// If its first time or second time, calculate according to that
-// Need to get patient NIC no. Not create patient ID
-// Encrypt patient details
-// Able to go through consultation hours and show not available
-// Show consultation List
+// Select doctor according specialization
+// Consultation List editable
 
 public class ConsultationGUI extends JFrame {
 
     static int cost;
     static LocalDate date;
-    static LocalTime time;
+    static LocalTime startTime;
+    static int hours;
     static Doctor assignedDoc;
+    static Key key;
 
 
     ConsultationGUI(){
 
         JFrame consultationDetailsFrame = new JFrame("Westminster Skin Care Centre");
-        consultationDetailsFrame.setSize(700,600); // set the size of the frame
-        consultationDetailsFrame.setLocationRelativeTo(null);  // center the frame on the screen
-        consultationDetailsFrame.setResizable(false);
-        consultationDetailsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //Exit out of application
-        //viewConsultationDetails(consultationDetailsFrame);
+        frameProperties(consultationDetailsFrame);
         consultationDetailsFrame.setVisible(false);
 
         //Frame 3
-        JFrame finalFrame = new JFrame("Westminster Skin Care Centre");
-        frameProperties(finalFrame);
-        viewPatientDetails(finalFrame, consultationDetailsFrame);
-        finalFrame.setVisible(false);
+        JFrame statusNCostFrame = new JFrame("Westminster Skin Care Centre");
+        frameProperties(statusNCostFrame);
+        statusNCostFrame.setVisible(false);
 
         //Frame 2
         JFrame patientDetailsFrame = new JFrame("Westminster Skin Care Centre");
         frameProperties(patientDetailsFrame);
-        patientDetails(patientDetailsFrame, finalFrame);
         patientDetailsFrame.setVisible(false); // make the frame invisible until button click event
 
         //Frame 1
         JFrame docCheckFrame = new JFrame("Westminster Skin Care Centre");
         frameProperties(docCheckFrame);
-        docAvailable(docCheckFrame,patientDetailsFrame);
-        docCheckFrame.setVisible(true);
+        docAvailable(docCheckFrame,patientDetailsFrame,statusNCostFrame,consultationDetailsFrame);
+        docCheckFrame.setVisible(false);
+
+        //Frame0
+        JFrame openFrame = new JFrame();
+        frameProperties(openFrame);
+        openingFrame(openFrame,docCheckFrame, consultationDetailsFrame);
+        openFrame.setVisible(true);
+
+
     }
     void frameProperties(JFrame frame){
         frame.setSize(500,600); // set the size of the frame
         frame.setLocationRelativeTo(null);  // center the frame on the screen
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //Exit out of application
-        //frame.pack();   // Pack the frame to fit its contents
 
         JPanel topPanel = new JPanel();
-        //topPanel.setBackground(Color.GREEN);
         topPanel.setBounds(0,0,500,70);
 
         JLabel topic = new JLabel();
@@ -74,22 +85,44 @@ public class ConsultationGUI extends JFrame {
         frame.add(topPanel);
     }
 
-    void docAvailable(JFrame frame1, JFrame frame2){
-        /* <<<--- Top Pane is in frame properties --->>> */
+    void openingFrame(JFrame frame0, JFrame frame1, JFrame frame4){
 
-//        Image image = new ImageIcon("logo.svg").getImage();
-//
-//        JLabel label = new JLabel();
-//        label.setIcon(new ImageIcon(image));
-//
-//        label.setPreferredSize(new Dimension(500, 50));
-//
-//        topPanel.add(label);
+        JPanel openPanel = new JPanel(new GridLayout(3,1));
+        openPanel.setBounds(100,150,300,200);
+
+        JButton addConsultationBtn = new JButton("Add Consultation");
+        addConsultationBtn.setPreferredSize(new Dimension(100, 80));
+        addConsultationBtn.addActionListener(e -> {
+            frame1.setVisible(true);
+            frame0.setVisible(false);
+        });
+        openPanel.add(addConsultationBtn);
+
+        openPanel.add(new JLabel("<html><br></html>"));   //Newline
+
+        JButton viewConsultationBtn = new JButton("View Consultation");
+        viewConsultationBtn.setPreferredSize(new Dimension(100, 80));
+
+        viewConsultationBtn.addActionListener(e -> {
+            viewConsultationDetails(frame1, frame4);
+            frame4.setVisible(true);
+            frame0.setVisible(false);
+        });
+        openPanel.add(viewConsultationBtn);
+
+        frame0.add(openPanel);
+
+        /* <<<--- Free Panel --->>> */
+        JPanel freePanel = new JPanel();
+        frame0.add(freePanel);
+    }
+
+    /* <<< ------------------------------ Check Doctor Availability ------------------------------ >>> */
+    void docAvailable(JFrame frame1, JFrame frame2, JFrame frame3, JFrame frame4){
 
         /* <<<--- Doctor Selection Pane --->>> */
         JPanel docTablePanel = new JPanel();
         docTablePanel.setBounds(0,70,500,130);
-        //docTablePanel.setBackground(Color.LIGHT_GRAY);
 
         String[] columnNames = {"Name", "Surname","Mobile No","Licence No","Specialisation"};
         DefaultTableModel dtm = new DefaultTableModel(columnNames, 0);
@@ -103,6 +136,7 @@ public class ConsultationGUI extends JFrame {
         }
 
         JTable docTable = new JTable(dtm);
+        docTable.setRowHeight(25);  //set the row height
 
         TableRowSorter<DefaultTableModel> myTRS = new TableRowSorter<>(dtm);
         docTable.setRowSorter(myTRS);   //Sort the table
@@ -117,13 +151,12 @@ public class ConsultationGUI extends JFrame {
         /* <<<--- Date Selection Pane --->>> */
 
         JPanel consultDatePanel = new JPanel(new GridLayout(5,2));
-        //consultDatePanel.setBackground(Color.ORANGE);
         consultDatePanel.setBounds(50,220,400,110);
 
         JLabel pickConsultDate = new JLabel("Consultation Date *");
         consultDatePanel.add(pickConsultDate);
         DatePicker consultationDate = new DatePicker();
-//        consultationDate.setPreferredSize(new Dimension(50, 50));
+        consultationDate.setDateToToday();
         consultDatePanel.add(consultationDate);
 
         consultDatePanel.add(new JLabel("<html><br></html>"));   //Newline
@@ -142,20 +175,16 @@ public class ConsultationGUI extends JFrame {
 
         SpinnerModel model = new SpinnerNumberModel(1, 1, 5, 1);
         JSpinner consultHours = new JSpinner(model);
-//        consultHours.setPreferredSize(new Dimension(100, 50));
         consultDatePanel.add(consultHours);
 
         frame1.add(consultDatePanel);
 
         /* <<<--- Warning Panel --->>> */
         JPanel warningPanel = new JPanel();
-        //warningPanel.setBackground(Color.cyan);
         warningPanel.setBounds(0,390,500,20);
-
         JLabel warning = new JLabel();
         warning.setForeground(Color.RED);
         warningPanel.add(warning);
-
         frame1.add(warningPanel);
 
 
@@ -164,7 +193,6 @@ public class ConsultationGUI extends JFrame {
         JPanel docStatusPanel = new JPanel(new FlowLayout());
         docStatusPanel.setLayout(new BoxLayout(docStatusPanel, BoxLayout.Y_AXIS));
         docStatusPanel.setBounds(110,440,500,65);
-        //docStatusPanel.setBackground(Color.YELLOW);
         docStatusPanel.setVisible(false);
 
         JLabel finalDoc = new JLabel();
@@ -172,20 +200,11 @@ public class ConsultationGUI extends JFrame {
         docStatusPanel.add(finalDoc);
 
         docStatusPanel.add(new JLabel("<html><br></html>"));   //Newline
-        //docStatusPanel.add(new JLabel("<html><br></html>"));   //Newline
 
         JLabel setDoc = new JLabel();
         setDoc.setFont(new Font(finalDoc.getFont().getName(), finalDoc.getFont().getStyle(), 15));
         docStatusPanel.add(setDoc);
 
-        //docStatusPanel.add(new JLabel("<html><br></html>"));   //Newline
-
-        //docStatusPanel.add(new JLabel("<html><br></html>"));   //Newline
-        //docStatusPanel.add(new JLabel("<html><br></html>"));   //Newline
-
-
-        //JLabel showCost = new JLabel();
-        //docStatusPanel.add(showCost);
 
         frame1.add(docStatusPanel);
 
@@ -198,89 +217,103 @@ public class ConsultationGUI extends JFrame {
         JButton confirmDocBtn = new JButton();
         confirmDocBtn.setPreferredSize(new Dimension(100, 50));
         confirmDocBtn.setVisible(false);
-        confirmDocBtn.addActionListener(e -> frame2.setVisible(true));
+        confirmDocBtn.addActionListener(e -> {
+            frame2.setVisible(true);
+            frame1.setVisible(false);
+
+            //<<<--- Clear user inputs for getting inputs next time --->>>
+            docTable.clearSelection();
+            consultationDate.setDateToToday();
+            consultTime.setTime(null);
+            docStatusPanel.setVisible(false);
+            confirmDocBtn.setVisible(false);
+        });
         frame1.add(confirmDocBtn, BorderLayout.SOUTH);
 
         /* <<<--- Consultation Date and Hours --->>> */
 
         JPanel docSubmitPanel = new JPanel();
         docSubmitPanel.setBounds(0,350,500,40);
-        //docSubmitPanel.setBackground(Color.RED);
 
         JButton checkDocBtn = new JButton("Check availability");
         checkDocBtn.setPreferredSize(new Dimension(150, 35));
         checkDocBtn.addActionListener(e ->{
 
-//            docStatusPanel.setVisible(true);
-//            confirmDocBtn.setVisible(true);
-
-            //calcCost(consultHours, showCost);
             date = consultationDate.getDate();  //Assign date after button clicked
-            time = consultTime.getTime();   //Assign time after button clicked
+            startTime = consultTime.getTime();   //Assign time after button clicked
+            hours = ((Number) consultHours.getValue()).intValue();
 
             int index = docTable.getSelectedRow();
 
-
-
-            if (index == 0 || date == null || time == null){
+            if (index == 0 || date == null || startTime == null){
                 warning.setText("Fill all the required fields that are marked with * ");
-                //warningPanel.add(warning);
-                //warning.setVisible(true);
-
             }
             else {
-                Object selectedCellValue = docTable.getValueAt(index, 3);    //Get the value of 4 th column
+              Object selectedCellValue = docTable.getValueAt(index, 3);    //Get the value of 4 th column
                 //Table selected doctor object
                 for (Doctor d : WestminsterSkinConsultationManager.doctorList) {
                     if (String.valueOf(d.getLicenceNo()).equals(String.valueOf(selectedCellValue))) {
-                        for (Consultation c : WestminsterSkinConsultationManager.consultationList){
-                            if (c.getDoctor().equals(d) && date.equals(c.getDate()) && time.equals(c.getTime())) {
-                                // Loop through the doctorList and check if each doctor is available at the selected date and time
-                                ArrayList<Doctor> availableDoc = new ArrayList<>();
-                                for (Doctor ad : WestminsterSkinConsultationManager.doctorList){
-                                    boolean isAvailable = true;
-                                    for (Consultation ac : WestminsterSkinConsultationManager.consultationList){
-                                        if (ac.getDoctor().equals(ad) && date.equals(ac.getDate()) && time.equals(ac.getTime())){
-                                            isAvailable = false;
-                                            break;
+                        if (!WestminsterSkinConsultationManager.consultationList.isEmpty()) {
+                            for (Consultation c : WestminsterSkinConsultationManager.consultationList) {
+                                LocalTime endTime = startTime.plusHours(hours);
+                                LocalTime oldConsultStartTime = c.getTime();
+                                LocalTime oldConsultEndTime = oldConsultStartTime.plusHours(c.getConsultHour());
+                                if (c.getDoctor().equals(d)
+                                        && date.equals(c.getDate())
+                                        // if startTime is equals or after oldStart time & statTime is before oldEnd time
+                                        && ((startTime.equals(oldConsultStartTime) || startTime.isAfter(oldConsultStartTime)) && startTime.isBefore(oldConsultEndTime))
+                                        || (endTime.isAfter(oldConsultStartTime) && endTime.isBefore(oldConsultEndTime))) {
+                                    // Loop through the doctorList and check if each doctor is available at the selected date and time
+                                    ArrayList<Doctor> availableDoc = new ArrayList<>();
+                                    for (Doctor ad : WestminsterSkinConsultationManager.doctorList) {
+                                        boolean isAvailable = true;
+                                        for (Consultation ac : WestminsterSkinConsultationManager.consultationList) {
+                                            if (ac.getDoctor().equals(ad) && date.equals(ac.getDate()) && startTime.equals(ac.getTime())) {
+                                                isAvailable = false;
+                                                break;
+                                            }
+                                        }
+                                        if (isAvailable) {
+                                            availableDoc.add(ad);
                                         }
                                     }
-                                    if (isAvailable){
-                                        availableDoc.add(ad);
+                                    if (availableDoc.isEmpty()) {    // If there are no available doctors, print a message and exit the method
+                                        finalDoc.setText("No doc available at the moment");
+                                        finalDoc.setForeground(Color.RED);
+                                        //docStatusPanel.add(finalDoc);
+                                        return;
                                     }
-                                }
-                                if (availableDoc.isEmpty()){    // If there are no available doctors, print a message and exit the method
-                                    finalDoc.setText("No doc available at the moment");
+                                    finalDoc.setText("Dr." + c.getDoctor().getName() + " " + c.getDoctor().getSurname() + " is not available");
                                     finalDoc.setForeground(Color.RED);
-                                    //docStatusPanel.add(finalDoc);
-                                    return;
-                                }
-                                finalDoc.setText("Dr." + c.getDoctor().getName() + " " + c.getDoctor().getSurname() + " is not available");
-                                finalDoc.setForeground(Color.RED);
-                                Collections.shuffle(availableDoc);  // Shuffle available doctors and select a random doctor
-                                assignedDoc = availableDoc.get(0);
-                                setDoc.setText("     Dr." + assignedDoc.getName() + " " + assignedDoc.getSurname() + " is assigned" );
-                                //docStatusPanel.add(setDoc);
+                                    Collections.shuffle(availableDoc);  // Shuffle available doctors and select a random doctor
+                                    assignedDoc = availableDoc.get(0);
+                                    setDoc.setText("     Dr." + assignedDoc.getName() + " " + assignedDoc.getSurname() + " is assigned");
+                                    //docStatusPanel.add(setDoc);
 
-                                //System.out.println("Dr."+ d.getName() + " " + d.getSurname() + " is available");
+                                    //System.out.println("Dr."+ d.getName() + " " + d.getSurname() + " is available");
+                                } else {
+                                    assignedDoc = d;
+                                    finalDoc.setText("Dr." + assignedDoc.getName() + " " + assignedDoc.getSurname() + " is available");
+
+                                    finalDoc.setForeground(Color.GREEN);
+                                    //docStatusPanel.add(finalDoc);
+                                }
                                 break;
                             }
+                        }else{
                             assignedDoc = d;
-                            finalDoc.setText("Dr."+ assignedDoc.getName() + " " + assignedDoc.getSurname() + " is available");
+                            cost = hours * 15;
+                            finalDoc.setText("Dr." + assignedDoc.getName() + " " + assignedDoc.getSurname() + " is available");
                             finalDoc.setForeground(Color.GREEN);
-                            //docStatusPanel.add(finalDoc);
-                            break;
                         }
-                        break;
                     }
                 }
-            docStatusPanel.setVisible(true);
-            confirmDocBtn.setVisible(true);
-            warning.setVisible(false);
-            confirmDocBtn.setText("Consult Dr." + assignedDoc.getName() + " " + assignedDoc.getSurname());
-            //System.out.println("Dr." + assignedDoc.getName() + " " + assignedDoc.getSurname() );
-            //Disable selection options to prevent edit
-            disableOptions(consultationDate,consultHours,docTable,consultTime,checkDocBtn);
+                docStatusPanel.setVisible(true);
+                confirmDocBtn.setVisible(true);
+                warning.setVisible(false);
+                confirmDocBtn.setText("Consult Dr." + assignedDoc.getName() + " " + assignedDoc.getSurname());
+
+                patientDetails(frame1, frame2, frame3, frame4);
             }
         });
         docSubmitPanel.add(checkDocBtn);
@@ -290,35 +323,24 @@ public class ConsultationGUI extends JFrame {
 
         /* <<<--- Free Panel --->>> */
         JPanel freePanel = new JPanel();
-        //freePanel.setBackground(Color.pink);
         frame1.add(freePanel);
 
     }
-    private void calcCost(JSpinner hours, JLabel costLabel) {
-        Object value = hours.getValue();
-//        System.out.println(value);
-        int intValue = (int) value;
-        if (intValue != 1){
-            cost = 25 + (intValue-1)*15;
-        }else {
-            cost = 15;
-        }
-        costLabel.setText("Consultation Cost : £" + cost);
 
-    }
-    private void disableOptions(DatePicker date, JSpinner hours, JTable table, TimePicker time, JButton docBtn) {
-        date.setEnabled(false);
-        hours.setEnabled(false);
-        table.setEnabled(false);
-        time.setEnabled(false);
-        docBtn.setEnabled(false);
+    public static Key generateKey(char[] password, byte[] salt, int iterations, int keyLength)
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
+
+        PBEKeySpec spec = new PBEKeySpec(password, salt, iterations, keyLength);
+
+        SecretKey pbeKey = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec);
+        return new SecretKeySpec(pbeKey.getEncoded(), "AES");
     }
 
-    public static void patientDetails(JFrame frame2, JFrame frame3){
+    public static void patientDetails(JFrame frame1, JFrame frame2, JFrame frame3, JFrame frame4){
         /* <<<--- Top Pane is in frame properties --->>> */
 
         /* <<<--- Enter patient details --->>> */
-        JPanel patientDetailsPanel = new JPanel(new GridLayout(9,2));
+        JPanel patientDetailsPanel = new JPanel(new GridLayout(11,2));
         //patientDetailsPanel.setBackground(Color.YELLOW);
         patientDetailsPanel.setBounds(75,80,350,250);
 
@@ -349,6 +371,15 @@ public class ConsultationGUI extends JFrame {
         patientDetailsPanel.add(new JLabel("<html><br></html>"));
         patientDetailsPanel.add(new JLabel("<html><br></html>"));
 
+        //NIC label and text-field
+        JLabel patientSurNICLabel = new JLabel("Patient NIC *");
+        patientDetailsPanel.add(patientSurNICLabel);
+        JTextField getPatientNICNo = new JTextField(20);
+        patientDetailsPanel.add(getPatientNICNo);
+
+        patientDetailsPanel.add(new JLabel("<html><br></html>"));
+        patientDetailsPanel.add(new JLabel("<html><br></html>"));
+
         //Mobile no. and text-field
         JLabel patientMobNo = new JLabel("Patient mobile No.");
         patientDetailsPanel.add(patientMobNo);
@@ -362,30 +393,10 @@ public class ConsultationGUI extends JFrame {
         int patientIDNo = WestminsterSkinConsultationManager.patientList.size() + 1;
         String patientID = "ID-" + patientIDNo;
 
-        // Create a JLabel
-        JLabel label = new JLabel("Upload an image");
-        patientDetailsPanel.add(label);
-        //label.setBounds(0, 0, 400, 280);
-
-        // Create a JButton
-        JButton button = new JButton("Choose Image");
-        patientDetailsPanel.add(button);
-        //button.setBounds(0, 280, 400, 20);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Create a file chooser
-                JFileChooser fileChooser = new JFileChooser();
-
-                // Show the file chooser and get the user's selection
-                int result = fileChooser.showOpenDialog(frame2);
-            }
-        });
         frame2.add(patientDetailsPanel);
 
         /* <<<--- Add extra patient details --->>> */
         JPanel extraDetPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        //extraDetPanel.setBackground(Color.cyan);
         extraDetPanel.setBounds(70,340,380,110);
 
         JLabel patientNotes = new JLabel("Add notes");
@@ -394,7 +405,6 @@ public class ConsultationGUI extends JFrame {
         JTextArea getPatientNotes = new JTextArea();
         getPatientNotes.setLineWrap(true);    //automatic break lines
         getPatientNotes.setWrapStyleWord(true);
-        //getPatientNotes.setBackground(Color.LIGHT_GRAY);
         getPatientNotes.setPreferredSize(new Dimension(350, 80));
         getPatientNotes.setBorder(BorderFactory.createLoweredBevelBorder());
         extraDetPanel.add(getPatientNotes);
@@ -407,13 +417,10 @@ public class ConsultationGUI extends JFrame {
         JLabel warning = new JLabel();
         warning.setForeground(Color.RED);
         warning.setVisible(false);
-
         frame2.add(warningPanel);
 
         /* <<<--- Free Panel --->>> */
         JPanel freePanel = new JPanel();
-        //freePanel.setBackground(Color.pink);
-
         frame2.add(freePanel);
 
 
@@ -423,30 +430,77 @@ public class ConsultationGUI extends JFrame {
 
             LocalDate dDate = pickPatientDOB.getDate();
 
-            if (getPatientName.getText().isEmpty() || getPatientSurName.getText().isEmpty() || dDate == null){
+            if (getPatientName.getText().isEmpty() || getPatientSurName.getText().isEmpty() || dDate == null || getPatientNICNo.getText().isEmpty()){
                 warning.setText("Fill all the required fields that are marked with * ");
                 warningPanel.add(warning);
                 warning.setVisible(true);
             }else {
+                for (Patient p : WestminsterSkinConsultationManager.patientList) {
+                    if (getPatientNICNo.getText().equals(p.getPatientNIC())) {
+                        cost = hours * 25;
+                    } else {
+                        cost = hours * 15;
+                    }
+                }
+
+                String message = getPatientNotes.getText(); // Get user input
+                char[] password = "mypassword".toCharArray();
+                byte[] salt = "mysalt".getBytes();
+                int iterations = 1000;
+                int keyLength = 128;
+                try {
+                    key = generateKey(password, salt, iterations, keyLength);
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+                    return;
+                }
+                // Initialize Cipher for encryption
+                Cipher cipher;
+                try {
+                    cipher = Cipher.getInstance("AES");
+                    cipher.init(Cipher.ENCRYPT_MODE, key);
+                } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException ex) {
+                    return;
+                }
+                byte[] cipherText;
+                String test;
+                try {
+                    cipherText = cipher.doFinal(message.getBytes());
+                    test = Base64.getEncoder().encodeToString(cipherText);
+                } catch (IllegalBlockSizeException | BadPaddingException ex) {
+                    return;
+                }
+
                 Patient patient = new Patient(getPatientName.getText(), getPatientSurName.getText(),
-                        pickPatientDOB.getDate(), ((Number) getPatientMobNo.getValue()).intValue(), patientID);    //Create a new patient
+                        pickPatientDOB.getDate(), ((Number) getPatientMobNo.getValue()).intValue(), patientID, getPatientNICNo.getText());    //Create a new patient
                 WestminsterSkinConsultationManager.patientList.add(patient);    //Assign the new patient in to the patient-list array
                 WestminsterSkinConsultationManager.consultationList.add(new Consultation(
-                        assignedDoc, patient, date, time, cost, getPatientNotes.getText())); //Add consultation
+                        assignedDoc, patient, date, startTime, hours, cost,test /*new String(encryptedMessage)*/)); //Add consultation
 
+                WestminsterSkinConsultationManager w = new WestminsterSkinConsultationManager();
+                w.saveInfo();
+
+                viewStatusNCost(frame1, frame3, frame4, cost);
                 frame3.setVisible(true);
+                frame2.setVisible(false);
+
+                //<<<--- Clear user inputs for getting inputs next time --->>>
+                getPatientName.setText(null);
+                getPatientSurName.setText(null);
+                pickPatientDOB.setDate(null);
+                getPatientNICNo.setText(null);
+                getPatientMobNo.setValue(0);
+                getPatientNotes.setText(null);
             }
         });
         frame2.add(saveDetailsBtn, BorderLayout.SOUTH);
 
     }
 
-    public static void viewPatientDetails(JFrame frame3, JFrame frame4){
+    public static void viewStatusNCost(JFrame frame1, JFrame frame3, JFrame frame4, int cost){
 
         /* <<<--- Display success --->>> */
         JPanel successPanel = new JPanel();
-        successPanel.setBounds(50,70,400,100);
-        successPanel.setBackground(Color.cyan);
+        successPanel.setBounds(50,70,400,250);
 
         JLabel successNoteLabel = new JLabel("Consultation added Successfully");
         successNoteLabel.setForeground(Color.GREEN);
@@ -455,43 +509,50 @@ public class ConsultationGUI extends JFrame {
 
         successPanel.add(new JLabel("<html><br><br><br></html>"));
 
-        JButton viewDetails = new JButton("View Details");
-        viewDetails.setPreferredSize(new Dimension(170, 40));
-        successPanel.add(viewDetails);
+        JLabel patientStatus = new JLabel();
+        if (cost / hours == 25){
+            patientStatus.setText("Patient is already in the system");
+        }else {
+            patientStatus.setText("This is patient's first consultation");
+        }
+        successPanel.add(patientStatus);
+
+        successPanel.add(new JLabel("<html><br><br><br></html>"));
+
+        JLabel totalCost = new JLabel();
+        totalCost.setText("Consultation cost is $" + cost);
+        totalCost.setFont(totalCost.getFont().deriveFont(15.0f));
+        successPanel.add(totalCost);
+
+        successPanel.add(new JLabel("<html><br><br><br></html>"));
+        successPanel.add(new JLabel("<html><br><br><br></html>"));
+
+        JButton viewDetails = new JButton("View All Consultations");
+        viewDetails.setPreferredSize(new Dimension(170, 50));
         viewDetails.addActionListener(e ->{
-            viewConsultationDetails(frame4);
+            viewConsultationDetails(frame1, frame4);
             frame4.setVisible(true);
+            frame3.setVisible(false);
         });
+
+        frame3.add(viewDetails, BorderLayout.SOUTH);
 
         frame3.add(successPanel);
 
-        /* <<<--- Show Details Panel --->>> */
-
-        JPanel detailsShow = new JPanel();
-        detailsShow.setBackground(Color.YELLOW);
-        detailsShow.setBounds(0,170,500,250);
-
-        //Patient p = WestminsterSkinConsultationManager.consultationList.get(WestminsterSkinConsultationManager.consultationList.size()).getPatient();
-
-        JLabel patientName = new JLabel();
-
-
-        frame3.add(detailsShow);
-
         /* <<<--- Free Panel --->>> */
         JPanel freePanel = new JPanel();
-        freePanel.setBackground(Color.pink);
 
         frame3.add(freePanel);
     }
 
+    public static void viewConsultationDetails(JFrame frame1, JFrame frame4){
 
-    public static void viewConsultationDetails(JFrame frame4){
+        /* <<<--- Consultation Table Panel --->>> */
         JPanel consultationTablePanel = new JPanel();
-        consultationTablePanel.setBounds(0,70,700,200);
+        consultationTablePanel.setBounds(0,70,500,200);
         consultationTablePanel.setBackground(Color.LIGHT_GRAY);
 
-        String[] columnNames = {"Patient ID", "Patient's Name","Doctor", "Date", "Time", "Cost (£)","Patient DOB", "Notes"};
+        String[] columnNames = {"Patient ID", "Patient's Name","Doctor", "Date", "Time", "Cost (£)"};
         DefaultTableModel dtm = new DefaultTableModel(columnNames, 0);
         for (Consultation c : WestminsterSkinConsultationManager.consultationList) {    // for(i=0; i<WestminsterSkinConsultationManager.doctorList.size(); i++)
             dtm.addRow(new String[]{
@@ -501,8 +562,6 @@ public class ConsultationGUI extends JFrame {
                     String.valueOf(c.getDate()),
                     String.valueOf(c.getTime()),
                     String.valueOf(c.getCost()),
-                    String.valueOf(c.getPatient().getDateOfBirth()),
-                    c.getNotes()
             });
         }
 
@@ -514,7 +573,6 @@ public class ConsultationGUI extends JFrame {
         consultationDetailsTable.getColumnModel().getColumn(3).setPreferredWidth(80);
         consultationDetailsTable.getColumnModel().getColumn(4).setPreferredWidth(40);
         consultationDetailsTable.getColumnModel().getColumn(5).setPreferredWidth(40);
-        consultationDetailsTable.getColumnModel().getColumn(6).setPreferredWidth(80);
 
         TableRowSorter<DefaultTableModel> myTRS = new TableRowSorter<>(dtm);
         consultationDetailsTable.setRowSorter(myTRS);   //Sort the table
@@ -522,62 +580,132 @@ public class ConsultationGUI extends JFrame {
         consultationDetailsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //Allow to select a single row at a time
 
         JScrollPane scrollPane = new JScrollPane(consultationDetailsTable); //Make table scrollable
-        scrollPane.setPreferredSize(new Dimension(650, 190));
+        scrollPane.setPreferredSize(new Dimension(480, 150));
 
         consultationTablePanel.add(scrollPane);
 
+        /* <<<--- View More Details Panel --->>> */
+
+        JPanel fullDetailVIewPanel = new JPanel(new GridLayout(10,2));
+        fullDetailVIewPanel.setBounds(100,270,300,250);
+        fullDetailVIewPanel.setBackground(Color.cyan);
+
+        JLabel patientFullName = new JLabel("Patient Full Name : ");
+        fullDetailVIewPanel.add(patientFullName);
+        JLabel pFullName = new JLabel();
+        fullDetailVIewPanel.add(pFullName);
+
+        JLabel patientDOB = new JLabel("Patient DOB : ");
+        fullDetailVIewPanel.add(patientDOB);
+        JLabel pDOB = new JLabel();
+        fullDetailVIewPanel.add(pDOB);
+
+        JLabel patientNIC = new JLabel("Patient NIC : ");
+        fullDetailVIewPanel.add(patientNIC);
+        JLabel pNIC = new JLabel();
+        fullDetailVIewPanel.add(pNIC);
+
+        JLabel patientMobNo = new JLabel("Patient Mobile No : ");
+        fullDetailVIewPanel.add(patientMobNo);
+        JLabel pMobNo = new JLabel();
+        fullDetailVIewPanel.add(pMobNo);
+
+        JLabel consultationDoctor = new JLabel("Consultation Doctor : ");
+        fullDetailVIewPanel.add(consultationDoctor);
+        JLabel pDoc = new JLabel();
+        fullDetailVIewPanel.add(pDoc);
+
+        JLabel consultDOcLNo = new JLabel("Doctor ID : ");
+        fullDetailVIewPanel.add(consultDOcLNo);
+        JLabel pDocLN = new JLabel();
+        fullDetailVIewPanel.add(pDocLN);
+
+        JLabel consultationDateTime = new JLabel("Consult Date Time : ");
+        fullDetailVIewPanel.add(consultationDateTime);
+        JLabel pDateTime = new JLabel();
+        fullDetailVIewPanel.add(pDateTime);
+
+
+        JLabel consultationHour = new JLabel("Consultation Hour : ");
+        fullDetailVIewPanel.add(consultationHour);
+        JLabel pHours = new JLabel();
+        fullDetailVIewPanel.add(pHours);
+
+        JLabel consultationCost = new JLabel("Consultation Cost : ");
+        fullDetailVIewPanel.add(consultationCost);
+        JLabel pCost = new JLabel();
+        fullDetailVIewPanel.add(pCost);
+
+        JLabel extraNotes = new JLabel("Extra Notes : ");
+        fullDetailVIewPanel.add(extraNotes);
+        JLabel pNotes = new JLabel();
+        fullDetailVIewPanel.add(pNotes);
+
+        JButton fullViewBtn = new JButton("View Full Details");
+        fullViewBtn.addActionListener(e -> {
+                    int index = consultationDetailsTable.getSelectedRow();
+                    Object selectedCellValue = consultationDetailsTable.getValueAt(index, 0);
+                    for (Consultation c : WestminsterSkinConsultationManager.consultationList) {
+                        if (String.valueOf(c.getPatient().getPatientID()).equals(String.valueOf(selectedCellValue))) {
+                            Object fName = c.getPatient().getName() + " " + c.getPatient().getSurname();
+                            Object dFName = c.getDoctor().getName() + " " + c.getDoctor().getSurname();
+                            Object cDateTime = c.getDate() + " " + c.getTime();
+
+                            pFullName.setText(String.valueOf(fName));
+                            pDOB.setText(String.valueOf(c.getPatient().getDateOfBirth()));
+                            pNIC.setText(String.valueOf(c.getPatient().getPatientNIC()));
+                            pMobNo.setText(String.valueOf(c.getPatient().getMobilNo()));
+                            pDoc.setText(String.valueOf(dFName));
+                            pDocLN.setText(String.valueOf(c.getDoctor().getLicenceNo()));
+                            pDateTime.setText(String.valueOf(cDateTime));
+                            pHours.setText(String.valueOf(c.getConsultHour()));
+                            pCost.setText(String.valueOf(c.getCost()));
+
+                            // Initialize Cipher for decryption
+                            Cipher cipher;
+                            try {
+                                cipher = Cipher.getInstance("AES");
+                                cipher.init(Cipher.DECRYPT_MODE, key);
+                            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException ex) {
+                                System.err.println("Error initializing cipher: " + ex.getMessage());
+                                return;
+                            }
+                            byte[] decryptedMessage;
+                            try {
+                                decryptedMessage = cipher.doFinal(Base64.getDecoder()
+                                        .decode(c.getNotes()));
+                            } catch (IllegalBlockSizeException | BadPaddingException ex) {
+                                System.err.println("Error decrypting message: " + ex.getMessage());
+                                return;
+                            }
+                            // Convert decrypted message to a string
+                            String decryptedString = new String(decryptedMessage);
+
+                            pNotes.setText(decryptedString);
+
+                            break;
+                        }
+                    }
+                }
+            );
+        consultationTablePanel.add(fullViewBtn);
+
         frame4.add(consultationTablePanel);
 
+        JButton backToAdd = new JButton("Add Consultation");
+        frame4.add(backToAdd, BorderLayout.SOUTH);
+        backToAdd.addActionListener(e ->{
+            frame1.setVisible(true);
+            frame4.setVisible(false);
+        });
 
-        //JTable docTable = new JTable(dtm);
-
-        //TableRowSorter<DefaultTableModel> myTRS = new TableRowSorter<>(dtm);
-        //docTable.setRowSorter(myTRS);   //Sort the table
-
-        //docTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //Allow to select a single row at a time
-        //JScrollPane scrollPane = new JScrollPane(docTable); //Make table scrollable
-        //scrollPane.setPreferredSize(new Dimension(480, 150));
-        //docTablePanel.add(scrollPane);
-
-        //frame1.add(docTablePanel);
+        frame4.add(fullDetailVIewPanel);
 
         /* <<<--- Free Panel --->>> */
         JPanel freePanel = new JPanel();
-        //freePanel.setBackground(Color.pink);
+
         frame4.add(freePanel);
 
     }
 
 }
-
-
-
-
-
-    /*
-To implement the GUI for a doctor-patient consultation software according to the requests specified above, you can follow these steps:
-
-1.Create a table to display the list of doctors with their name, age, and other relevant information.
-You can use the JTable component provided by the Java Swing library to create the table.
-
-2.Implement a sorting function to allow the user to sort the list of doctors alphabetically.
-You can use the Collections.sort method to sort the list of doctors, and then update the table with the sorted list.
-
-3.Add a button or other UI element that allows the user to select a doctor and book a consultation.
-When the user clicks this button, you can display a form that allows the user to enter the patient's information,
-such as name, surname, date of birth, and mobile number.
-
-4.Implement a function to check the availability of the doctor at the chosen date and time.
-If the doctor is not available, you can use the Collections.shuffle method to randomly select an available doctor
-from the list of all available doctors.
-
-5.Implement a function to calculate the cost of the consultation based on the length of the consultation and
-the rate specified in the request. You can use this function to display the cost to the user and
-allow them to confirm the consultation.
-
-6.Implement a function to encrypt the notes entered by the user using a suitable encryption algorithm.
-You can use an available API such as the Java Cryptography Extension (JCE) to handle the encryption.
-
-7.Implement a way for the user to view the stored information for a consultation, including the patient info,
-cost, and encrypted notes. This can be done by displaying the information in a form or a separate window.
-    */
