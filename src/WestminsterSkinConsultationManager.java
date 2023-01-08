@@ -76,6 +76,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                     case 3 -> wscm.printDocList();
                     case 4 -> wscm.saveInfo();
                     case 5 -> wscm.readInfo();
+                    case 6 -> printConsultationList();
                     case 10 -> wscm.openGUI();
                     case 0 -> System.exit(0);
                     default -> System.out.println("Invalid selection, Try again...");
@@ -110,7 +111,6 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             }catch (DateTimeParseException e){
                 System.out.println("Invalid date format");
             }
-
         } else {
             System.out.println("Doctor List is full");
         }
@@ -120,32 +120,12 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter doctor licence No to remove : ");
         String docLicenceNo = scanner.next();
-        //try {
-                if (doctorList.removeIf(doctor ->
-                        String.valueOf(doctor.getLicenceNo()).equals(String.valueOf(docLicenceNo)))){
-                    System.out.println("Removed successfully");
-                    System.out.println(doctorList.size() + " doctors available");
-                }else {
-                    System.out.println("No such doctor available");
-                }
-
-
-//            System.out.println("Removed successfully");
-            /*for (int i = 0; i <= doctorList.size(); i++) {
-                if (doctorList.get(i).getLicenceNo() == docLicenceNo) {
-                    Doctor deletedDocCopy = doctorList.get(i);  //Get a copy of doctor element
-                    doctorList.remove(i);
-                    System.out.println("Successfully Removed Dr." + deletedDocCopy.getName() + " " + deletedDocCopy.getSurname());
-                    System.out.println(doctorList.size() + " doctors available");
-                    break;
-                } else {
-                    System.out.println("Licence No. not found");
-//                    break;
-                }
-            }*/
-//        }catch (InputMismatchException e){
-//            System.out.println("Enter integers only");
-//        }
+        if (doctorList.removeIf(doctor -> String.valueOf(doctor.getLicenceNo()).equals(String.valueOf(docLicenceNo)))) {
+            System.out.println("Removed successfully");
+            System.out.println(doctorList.size() + " doctors available");
+        }else {
+            System.out.println("No such doctor available");
+        }
     }
 
     public void printDocList(){
@@ -159,6 +139,18 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             System.out.printf("%-13d",doc.getMobilNo());
             System.out.printf("%-13s",doc.getLicenceNo());
             System.out.printf("%-13s \n",doc.getSpecialisation() );
+        }
+    }
+
+    public static void printConsultationList(){
+        ArrayList<Consultation> copy = (ArrayList<Consultation>) consultationList.clone();
+        System.out.println("Name ---- Surname ---- DOB ---------- Mobile ----- Licence ---- Specialisation");
+        for (Consultation doc : copy){
+            System.out.printf("%-10s",doc.getDoctor().getName());
+            System.out.printf("%-13s",doc.getPatient().getPatientID());
+            System.out.printf("%-15s",doc.getDate());
+            System.out.printf("%-13s",doc.getCost());
+            System.out.printf("%-13s \n",doc.getConsultHour() );
         }
     }
 
