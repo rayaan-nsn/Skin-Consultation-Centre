@@ -1,6 +1,6 @@
 # Skin-Consultation-Centre
 
-The Skin Consultation Centre Management System is a program implemented in Java using OOP concepts that allows the manager to manage doctors, book consultations, and perform various management tasks related to the consultation center.
+The Skin Consultation Centre Management System is a program implemented in Java that utilizes object-oriented programming (OOP) concepts. It enables the manager to handle doctor management, book consultations, and perform various management tasks related to the consultation center.
 
 ## Project Overview
 The objective of this project is to develop a program that implements a system for managing a Skin Consultation Centre. The system consists of a console-based interface and a Graphical User Interface (GUI) for better user interaction.
